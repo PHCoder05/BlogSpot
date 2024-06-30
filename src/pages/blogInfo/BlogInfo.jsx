@@ -1,7 +1,8 @@
-import React, { useContext, useEffect, useState } from 'react'
-import myContext from '../../context/data/myContext'
+import React, { useContext, useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet';
+import myContext from '../../context/data/myContext';
 import { useParams } from 'react-router';
-import { Timestamp, addDoc, collection, doc, getDoc, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { Timestamp, addDoc, collection, doc, getDoc, onSnapshot, orderBy, query, getDocs } from 'firebase/firestore';
 import { fireDb } from '../../firebase/FirebaseConfig';
 import Loader from '../../components/loader/Loader';
 import Layout from '../../components/layout/Layout';
@@ -17,60 +18,79 @@ function BlogInfo() {
   const params = useParams();
 
   const [getBlogs, setGetBlogs] = useState();
+  const [otherBlogs, setOtherBlogs] = useState([]);
+  const [fullName, setFullName] = useState('');
+  const [commentText, setCommentText] = useState('');
+  const [allComment, setAllComment] = useState([]);
 
   const getAllBlogs = async () => {
     setloading(true);
     try {
-      const productTemp = await getDoc(doc(fireDb, "blogPost", params.id))
+      const productTemp = await getDoc(doc(fireDb, "blogPost", params.id));
       if (productTemp.exists()) {
         setGetBlogs(productTemp.data());
       } else {
-        console.log("Document does not exist")
+        console.log("Document does not exist");
       }
-      setloading(false)
+      setloading(false);
     } catch (error) {
-      console.log(error)
-      setloading(false)
+      console.log(error);
+      setloading(false);
     }
-  }
+  };
 
   useEffect(() => {
     getAllBlogs();
-  }, []);
+  }, [params.id]);
 
-  function createMarkup(c) {
-    return { __html: c };
-  }
+  const getOtherBlogs = async () => {
+    try {
+      const q = query(
+        collection(fireDb, "blogPost"),
+        orderBy('date', 'desc')
+      );
+      const querySnapshot = await getDocs(q);
+      let blogsArray = [];
+      querySnapshot.forEach((doc) => {
+        if (doc.id !== params.id) {
+          blogsArray.push({ ...doc.data(), id: doc.id });
+        }
+      });
+      setOtherBlogs(blogsArray);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-  const [fullName, setFullName] = useState('');
-  const [commentText, setCommentText] = useState('');
+  useEffect(() => {
+    getOtherBlogs();
+  }, [params.id]);
 
   const addComment = async () => {
-    const commentRef = collection(fireDb, "blogPost/" + `${params.id}/` + "comment")
+    const commentRef = collection(fireDb, "blogPost/" + `${params.id}/` + "comment");
     try {
       await addDoc(
         commentRef, {
-        fullName,
-        commentText,
-        time: Timestamp.now(),
-        date: new Date().toLocaleString(
-          "en-US",
-          {
-            month: "short",
-            day: "2-digit",
-            year: "numeric",
-          }
-        )
-      })
+          fullName,
+          commentText,
+          time: Timestamp.now(),
+          date: new Date().toLocaleString(
+            "en-US",
+            {
+              month: "short",
+              day: "2-digit",
+              year: "numeric",
+            }
+          )
+        }
+      );
       toast.success('Comment Added Successfully');
-      setFullName("")
-      setCommentText("")
+      setFullName("");
+      setCommentText("");
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
-
-  const [allComment, setAllComment] = useState([]);
+  };
 
   const getcomment = async () => {
     try {
@@ -83,33 +103,30 @@ function BlogInfo() {
         QuerySnapshot.forEach((doc) => {
           productsArray.push({ ...doc.data(), id: doc.id });
         });
-        setAllComment(productsArray)
-        console.log(productsArray)
+        setAllComment(productsArray);
       });
-      return () => data;
+      return () => data();
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
 
   useEffect(() => {
     getcomment();
-    window.scrollTo(0, 0)
-  }, []);
+    window.scrollTo(0, 0);
+  }, [params.id]);
 
   const shareUrl = window.location.href;
   const shareTitle = getBlogs?.blogs?.title;
 
-  // Copy URL to clipboard
   const copyToClipboard = () => {
     navigator.clipboard.writeText(shareUrl).then(() => {
       toast.success('Link copied to clipboard!');
     }).catch((error) => {
       console.log('Error copying to clipboard', error);
     });
-  }
+  };
 
-  // Embed code
   const embedCode = `<iframe src="${shareUrl}" width="600" height="400" frameborder="0" allowfullscreen></iframe>`;
 
   const copyEmbedCode = () => {
@@ -118,22 +135,28 @@ function BlogInfo() {
     }).catch((error) => {
       console.log('Error copying embed code', error);
     });
+  };
+
+  // Define createMarkup function
+  function createMarkup(content) {
+    return { __html: content };
   }
 
   return (
     <Layout>
-      <section className="rounded-lg h-full overflow-hidden max-w-4xl mx-auto px-4 ">
+      <Helmet>
+      <title>{getBlogs ? getBlogs.blogs.title : 'Loading...'}</title> {/* Dynamically set the title */}
+      </Helmet>
+      <section className="rounded-lg h-full overflow-hidden max-w-4xl mx-auto px-4">
         <div className="py-4 lg:py-8">
           {loading
-            ?
-            <Loader />
-            :
-            <div>
-              {/* Thumbnail  */}
+            ? <Loader />
+            : <div>
+              {/* Thumbnail */}
               <img alt="content" className="mb-3 rounded-lg h-full w-full"
                 src={getBlogs?.thumbnail}
               />
-              {/* title And date  */}
+              {/* Title And Date */}
               <div className="flex justify-between items-center mb-3">
                 <h1 style={{ color: mode === 'dark' ? 'white' : 'black' }}
                   className='text-xl md:text-2xl lg:text-2xl font-semibold'>
@@ -148,10 +171,10 @@ function BlogInfo() {
                   'border-gray-600' : 'border-gray-400'}`}
               />
 
-              {/* blog Content  */}
+              {/* Blog Content */}
               <div className="content">
                 <div
-                  className={`[&> h1]:text-[32px] [&>h1]:font-bold  [&>h1]:mb-2.5
+                  className={`[&>h1]:text-[32px] [&>h1]:font-bold [&>h1]:mb-2.5
                   ${mode === 'dark' ? '[&>h1]:text-[#ff4d4d]' : '[&>h1]:text-black'}
 
                   [&>h2]:text-[24px] [&>h2]:font-bold [&>h2]:mb-2.5
@@ -221,6 +244,27 @@ function BlogInfo() {
             </div>}
         </div>
 
+        {/* You Can Check Also Section */}
+        <section className="mt-8">
+          <h2 className="text-2xl font-bold mb-4">You Can Check Also:</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {otherBlogs.map(blog => (
+              <div key={blog.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+                <img
+                  className="w-full h-48 object-cover"
+                  src={blog.thumbnail}
+                  alt={blog.title}
+                />
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold">{blog.title}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{blog.date}</p>
+                  <a href={`/bloginfo/${blog.id}`} className="text-blue-500 hover:underline">Read More</a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <Comment
           addComment={addComment}
           commentText={commentText}
@@ -231,7 +275,7 @@ function BlogInfo() {
         />
       </section>
     </Layout>
-  )
+  );
 }
 
 export default BlogInfo;

@@ -7,8 +7,8 @@ function Comment({ addComment, commentText, setcommentText, allComment, fullName
   const { mode } = context;
 
   return (
-    <section className="py-8 lg:py-16 bg-gray-100 dark:bg-gray-800">
-      <div className="max-w-2xl mx-auto px-4">
+    <section className="py-8 lg:py-16 bg-gray-100 dark:bg-gray-800 shadow-lg rounded-lg mx-4 md:mx-8 lg:mx-12">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg lg:text-2xl font-bold" style={{ color: mode === 'dark' ? 'white' : 'black' }}>
             Make a Comment
@@ -26,7 +26,7 @@ function Comment({ addComment, commentText, setcommentText, allComment, fullName
               placeholder='Enter Full Name'
               className="w-full px-4 py-2 text-sm border-0 rounded-t-lg focus:ring-0 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
               style={{
-                background: mode === 'dark' ? '#353b48' : 'rgb(226, 232, 240)'
+                background: mode === 'dark' ? '#353b48' : 'rgb(226, 232, 240)',
               }}
             />
           </div>
@@ -39,10 +39,12 @@ function Comment({ addComment, commentText, setcommentText, allComment, fullName
               onChange={(e) => setcommentText(e.target.value)}
               id="comment"
               rows={6}
-              className="w-full px-4 py-2 text-sm border-0 rounded-t-lg focus:ring-0 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+              className="w-full px-4 py-2 text-sm border-0 rounded-lg focus:ring-0 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
               placeholder="Write a comment..."
               required
-              style={{ background: mode === 'dark' ? '#353b48' : 'rgb(226, 232, 240)' }}
+              style={{
+                background: mode === 'dark' ? '#353b48' : 'rgb(226, 232, 240)',
+              }}
             />
           </div>
 
@@ -50,9 +52,10 @@ function Comment({ addComment, commentText, setcommentText, allComment, fullName
           <div className="flex justify-center">
             <Button
               onClick={addComment}
+              className="w-full sm:w-auto"
               style={{
                 background: mode === 'dark' ? 'rgb(226, 232, 240)' : 'rgb(30, 41, 59)',
-                color: mode === 'dark' ? 'rgb(30, 41, 59)' : 'rgb(226, 232, 240)'
+                color: mode === 'dark' ? 'rgb(30, 41, 59)' : 'rgb(226, 232, 240)',
               }}
             >
               Post Comment
@@ -72,7 +75,7 @@ function Comment({ addComment, commentText, setcommentText, allComment, fullName
                       <p className="text-lg font-semibold" style={{ color: mode === 'dark' ? 'white' : 'black' }}>
                         {fullName}
                       </p>
-                      <p className="text-sm text-gray-500" style={{ color: mode === 'dark' ? 'gray-400' : 'gray-600' }}>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         {date}
                       </p>
                     </div>

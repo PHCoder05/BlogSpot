@@ -7,40 +7,36 @@ function Footer() {
 
   return (
     <footer
-      className="bg-gray-900 dark:bg-gray-800 text-white"
-      style={{ background: mode === 'dark' ? 'rgb(30, 41, 59)' : '#30336b' }}
+      className={`bg-gray-900 dark:bg-gray-800 text-white ${mode === 'dark' ? 'bg-gray-900' : 'bg-gray-800'}`}
     >
       <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row justify-between items-center">
-        {/* Left Content */}
+        {/* Left Content: Logo */}
         <div className="flex items-center space-x-4">
-          {/* Blog Logo */}
-          <div className="flex items-center">
-            <img
-              className="w-12 h-12 rounded-full"
-              src="https://cdn-icons-png.flaticon.com/128/3685/3685253.png"
-              alt="logo"
-            />
-            <span className="ml-3 text-xl font-semibold">PHCoder05</span>
-          </div>
-
-          {/* Copyright Information */}
-          <p className="text-sm mt-2 md:mt-0">
-            © 2024 PHcoder05 —
-            <a
-              href="https://twitter.com/pankajhadole"
-              className="text-blue-400 hover:text-blue-600 ml-1"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              Pankaj Hadole
-            </a>
-          </p>
+          <img
+            className="w-12 h-12 rounded-full"
+            src="https://cdn-icons-png.flaticon.com/128/3685/3685253.png"
+            alt="logo"
+          />
+          <span className="text-xl font-semibold md:text-2xl">PHCoder05</span>
         </div>
 
-        {/* Social Media Icons */}
+        {/* Center Content: Copyright */}
+        <p className="text-sm mt-4 md:mt-0 text-center md:text-center flex-grow">
+          © 2024 PHcoder05 —
+          <a
+            href="https://www.linkedin.com/in/pankaj-hadole-722476232/"
+            className="text-blue-400 hover:text-blue-600 ml-1"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            Pankaj Hadole
+          </a>
+        </p>
+
+        {/* Right Content: Social Media Icons */}
         <div className="flex space-x-4 mt-4 md:mt-0">
           <a
-            href="https://www.facebook.com/PHcoder05"
+            href="https://www.facebook.com/"
             className="text-gray-400 hover:text-white transition-colors duration-300"
             aria-label="Facebook"
           >
@@ -57,7 +53,7 @@ function Footer() {
           </a>
 
           <a
-            href="https://twitter.com/PHcoder05"
+            href="https://twitter.com/"
             className="text-gray-400 hover:text-white transition-colors duration-300"
             aria-label="Twitter"
           >
@@ -74,7 +70,7 @@ function Footer() {
           </a>
 
           <a
-            href="https://www.instagram.com/PHcoder05"
+            href="https://www.instagram.com/"
             className="text-gray-400 hover:text-white transition-colors duration-300"
             aria-label="Instagram"
           >
@@ -93,7 +89,7 @@ function Footer() {
           </a>
 
           <a
-            href="https://www.linkedin.com/company/phcoder05"
+            href="https://www.linkedin.com/company/"
             className="text-gray-400 hover:text-white transition-colors duration-300"
             aria-label="LinkedIn"
           >
