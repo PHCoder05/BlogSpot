@@ -1,0 +1,43 @@
+/* AboutPage.css */
+
+/* Styles for the About page section */
+.section {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .bg-dark {
+    background-color: #1a202c; /* Dark background color for dark mode */
+    color: white;
+  }
+  
+  .bg-light {
+    background-color: #edf2f7; /* Light background color for light mode */
+    color: black;
+  }
+  
+  .header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .description {
+    margin-bottom: 1.5rem;
+  }
+  
+  .team-section {
+    margin-bottom: 2rem;
+  }
+  
+  .btn-back-home {
+    background-color: #38b2ac; /* Teal background color */
+    color: white;
+  }
+  
+  .btn-back-home:hover {
+    background-color: #319795; /* Darker teal on hover */
+  }
+  

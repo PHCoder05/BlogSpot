@@ -239,6 +239,22 @@ function Dashboard() {
                               {date}
                             </td>
 
+                            {/* Edit Blog  */}
+                            <td
+                              style={{
+                                color: mode === "dark" ? "white" : "black",
+                              }}
+                              className="px-6 py-4"
+                            >
+                              <Link to={`/editblog/${id}`}>
+                                <button
+                                  className="px-4 py-1 rounded-lg text-white font-bold bg-blue-500"
+                                >
+                                  Edit
+                                </button>
+                              </Link>
+                            </td>
+
                             {/* Delete Blog  */}
                             <td
                               onClick={() => deleteBlogs(id)}

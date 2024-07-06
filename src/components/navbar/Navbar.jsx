@@ -22,8 +22,6 @@ export default function Nav() {
 
     const admin = localStorage.getItem('admin');
 
-
-
     // All NavList 
     const navList = (
         <ul className="mb-4 mt-2 flex flex-col gap-2 lg:mb-0 lg:mt-0 lg:flex-row lg:items-center lg:gap-6">
@@ -67,7 +65,7 @@ export default function Nav() {
         <>
             {/* Navbar  */}
             <Navbar
-                className="sticky inset-0 z-20 h-max max-w-full border-none rounded-none py-2 px-4 lg:px-8 lg:py-2"
+                className="inset-0 z-20 h-max max-w-full border-none rounded-none py-2 px-4 lg:px-8 lg:py-2"
                 style={{ background: mode === 'dark' ? 'rgb(30, 41, 59)' : '#30336b' }}>
 
                 {/* Desktop View  */}
@@ -83,7 +81,7 @@ export default function Nav() {
                             {/* Logo Image  */}
                             <img
                                 className=' w-10 h-10 '
-                                src='https://cdn-icons-png.flaticon.com/128/3685/3685253.png'
+                                src='src\assets\Screenshot_5.jpg'
                             />
                             {/* Logo Text  */}
                             <span>

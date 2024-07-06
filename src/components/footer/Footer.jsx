@@ -14,7 +14,7 @@ function Footer() {
         <div className="flex items-center space-x-4">
           <img
             className="w-12 h-12 rounded-full"
-            src="https://cdn-icons-png.flaticon.com/128/3685/3685253.png"
+            src="src\assets\Screenshot_5.jpg"
             alt="logo"
           />
           <span className="text-xl font-semibold md:text-2xl">PHCoder05</span>
@@ -53,7 +53,7 @@ function Footer() {
           </a>
 
           <a
-            href="https://twitter.com/"
+            href="https://twitter.com/pankaj_hadole"
             className="text-gray-400 hover:text-white transition-colors duration-300"
             aria-label="Twitter"
           >
@@ -70,7 +70,7 @@ function Footer() {
           </a>
 
           <a
-            href="https://www.instagram.com/"
+            href="https://www.instagram.com/krish_0512_"
             className="text-gray-400 hover:text-white transition-colors duration-300"
             aria-label="Instagram"
           >
@@ -89,7 +89,7 @@ function Footer() {
           </a>
 
           <a
-            href="https://www.linkedin.com/company/"
+            href="https://www.linkedin.com/in/pankaj-hadole-722476232/"
             className="text-gray-400 hover:text-white transition-colors duration-300"
             aria-label="LinkedIn"
           >

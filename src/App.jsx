@@ -15,6 +15,20 @@ import MyState from "./context/data/myState";
 import { Toaster } from "react-hot-toast";
 import CreateBlog from "./pages/admin/createBlog/CreateBlog";
 import EditBlog from "./pages/admin/editBlog/Editblog";
+import AboutPage from './components/aboutPage/AboutPage';
+
+import React from "react";
+
+const ProtectedRouteForAdmin = ({ children }) => {
+  const admin = JSON.parse(localStorage.getItem('admin'));
+  const authorizedEmails = JSON.parse(localStorage.getItem('authorizedEmails')) || ['pankajhadole4@gmail.com'];
+
+  if (!admin || !authorizedEmails.includes(admin.user.email)) {
+    return <Navigate to="/admin" />;
+  }
+
+  return children;
+};
 
 function App() {
   return (
@@ -26,14 +40,17 @@ function App() {
           <Route path="/allblogs" element={<AllBlogs />} />
           <Route path="/bloginfo/:id" element={<BlogInfo />} />
           <Route path="/admin" element={<AdminLogin />} />
+          <Route path="/about" element={<AboutPage />} />
+
           <Route
-            path="/dashboard"
-            element={
-              <ProtectedRouteForAdmin>
-                <Dashboard />
-              </ProtectedRouteForAdmin>
-            }
-          />
+    path="/dashboard"
+    element={
+        <ProtectedRouteForAdmin>
+            <Dashboard />
+        </ProtectedRouteForAdmin>
+    }
+/>
+
           <Route
             path="/createblog"
             element={
@@ -50,7 +67,6 @@ function App() {
               </ProtectedRouteForAdmin>
             }
           />
-
           <Route path="/*" element={<NoPage />} />
         </Routes>
         <Toaster />
@@ -60,12 +76,3 @@ function App() {
 }
 
 export default App;
-
-export const ProtectedRouteForAdmin = ({ children }) => {
-  const admin = JSON.parse(localStorage.getItem("admin"));
-  if (admin?.user?.email === "pankajhadole4@gmail.com") {
-    return children;
-  } else {
-    return <Navigate to={"/admin"} />;
-  }
-};

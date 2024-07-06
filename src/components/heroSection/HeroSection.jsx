@@ -122,7 +122,7 @@ function HeroSection() {
 
         {/* Interactive Link */}
         <div className="text-sm mt-4">
-          <a href="#learn-more" className="text-teal-300 hover:underline">Explore More Features</a>
+          <a href=" " className="text-teal-300 hover:underline">Explore More Features</a>
         </div>
       </div>
 

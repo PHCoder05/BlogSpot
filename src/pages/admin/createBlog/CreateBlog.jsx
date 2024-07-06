@@ -19,8 +19,12 @@ function CreateBlog() {
         time: Timestamp.now(),
     });
     const [thumbnail, setThumbnail] = useState(null);
+    const [tags, setTags] = useState([]);
+    const [tagInput, setTagInput] = useState('');
     const [text, setText] = useState('');
     const navigate = useNavigate();
+
+    const categories = ["Technology", "Farming", "Programming", "Sports", "News", "Trending", "Other..", "Personal"];
 
     const addPost = async () => {
         if (blogs.title === "" || blogs.category === "" || blogs.content === "" || !thumbnail) {
@@ -34,26 +38,26 @@ function CreateBlog() {
         const imageRef = ref(storage, `blogimage/${thumbnail.name}`);
         uploadBytes(imageRef, thumbnail).then((snapshot) => {
             getDownloadURL(snapshot.ref).then((url) => {
-                const productRef = collection(fireDb, "blogPost")
+                const productRef = collection(fireDb, "blogPost");
                 try {
                     addDoc(productRef, {
-                        blogs,
+                        blogs: {
+                            ...blogs,
+                            tags: tags,
+                        },
                         thumbnail: url,
                         time: Timestamp.now(),
-                        date: new Date().toLocaleString(
-                            "en-US",
-                            {
-                                month: "short",
-                                day: "2-digit",
-                                year: "numeric",
-                            }
-                        )
+                        date: new Date().toLocaleString("en-US", {
+                            month: "short",
+                            day: "2-digit",
+                            year: "numeric",
+                        }),
                     });
                     navigate('/dashboard');
                     toast.success('Post Added Successfully');
                 } catch (error) {
                     toast.error(error.message);
-                    console.log(error);
+                    console.error(error);
                 }
             });
         });
@@ -63,11 +67,28 @@ function CreateBlog() {
         window.scrollTo(0, 0);
     }, []);
 
-    function createMarkup(c) {
-        return { __html: c };
-    }
+    const handleTagInputChange = (event) => {
+        setTagInput(event.target.value);
+    };
 
-    const handleImageUpload = (blobInfo, success, failure, progress) => {
+    const handleAddTag = (event) => {
+        event.preventDefault();
+        if (tagInput.trim() !== '') {
+            if (!tags.includes(tagInput.trim())) {
+                setTags([...tags, tagInput.trim()]);
+                setTagInput('');
+            } else {
+                toast.error("Tag already added");
+            }
+        }
+    };
+
+    const handleRemoveTag = (index) => {
+        const newTags = tags.filter((_, i) => i !== index);
+        setTags(newTags);
+    };
+
+    const handleImageUpload = (blobInfo, success, failure) => {
         const file = blobInfo.blob();
         const imageRef = ref(storage, `blogimage/${file.name}`);
         uploadBytes(imageRef, file).then((snapshot) => {
@@ -81,6 +102,10 @@ function CreateBlog() {
             failure('Image upload failed.');
             console.error(error);
         });
+    }
+
+    function createMarkup(c) {
+        return { __html: c };
     }
 
     return (
@@ -106,7 +131,7 @@ function CreateBlog() {
                                     : 'black'
                             }}
                         >
-                            Create blog
+                            Create Blog
                         </Typography>
                     </div>
                 </div>
@@ -126,7 +151,6 @@ function CreateBlog() {
                     </Typography>
                     <input
                         type="file"
-                        label="Upload thumbnail"
                         className="shadow-[inset_0_0_4px_rgba(0,0,0,0.6)] placeholder-black w-full rounded-md p-1"
                         style={{
                             background: mode === 'dark'
@@ -139,7 +163,6 @@ function CreateBlog() {
 
                 <div className="mb-3">
                     <input
-                        label="Enter your Title"
                         className={`shadow-[inset_0_0_4px_rgba(0,0,0,0.6)] w-full rounded-md p-1.5 
                         outline-none ${mode === 'dark'
                             ? 'placeholder-black'
@@ -157,13 +180,11 @@ function CreateBlog() {
                 </div>
 
                 <div className="mb-3">
-                    <input
-                        label="Enter your Category"
+                    <select
                         className={`shadow-[inset_0_0_4px_rgba(0,0,0,0.6)] w-full rounded-md p-1.5 
                         outline-none ${mode === 'dark'
                             ? 'placeholder-black'
                             : 'placeholder-black'}`}
-                        placeholder="Enter Your Category"
                         style={{
                             background: mode === 'dark'
                                 ? '#dcdde1'
@@ -172,7 +193,41 @@ function CreateBlog() {
                         name="category"
                         value={blogs.category}
                         onChange={(e) => setBlogs({ ...blogs, category: e.target.value })}
+                    >
+                        <option value="" disabled>Select Category</option>
+                        {categories.map((category, index) => (
+                            <option key={index} value={category}>{category}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="mb-3">
+                    <input
+                        type="text"
+                        value={tagInput}
+                        onChange={handleTagInputChange}
+                        placeholder="Add tags (press Enter to add)"
+                        className={`border ${mode === 'dark' ? 'border-gray-700 bg-gray-800' : 'border-gray-300'} p-2 rounded-md`}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                handleAddTag(e);
+                            }
+                        }}
                     />
+                    <Button onClick={handleAddTag} className="ml-2">
+                        Add Tag
+                    </Button>
+                </div>
+
+                <div className="mb-3">
+                    {tags.map((tag, index) => (
+                        <span key={index} className={`inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 ${mode === 'dark' ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-800'}`}>
+                            {tag}
+                            <span onClick={() => handleRemoveTag(index)} className="ml-1 cursor-pointer">
+                                &#x2715;
+                            </span>
+                        </span>
+                    ))}
                 </div>
 
                 <Editor

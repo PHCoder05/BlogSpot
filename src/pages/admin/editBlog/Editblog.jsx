@@ -31,10 +31,16 @@ function EditBlog() {
       try {
         const docRef = doc(fireDb, "blogPost", id);
         const docSnap = await getDoc(docRef);
-
+    
         if (docSnap.exists()) {
           const blogData = docSnap.data();
-          setBlogs(blogData);
+          setBlogs((prevBlogs) => ({
+            ...prevBlogs,
+            title: blogData.title,
+            category: blogData.category,
+            content: blogData.content,
+            thumbnail: blogData.thumbnail,
+          }));
           setCurrentThumbnail(blogData.thumbnail);
         } else {
           console.log("No such document!");
@@ -47,6 +53,7 @@ function EditBlog() {
         navigate("/"); // Redirect to homepage or handle as needed
       }
     };
+    
 
     fetchBlog();
   }, [id, navigate]);
@@ -58,15 +65,13 @@ function EditBlog() {
     }
 
     try {
-      let imageUrl = currentThumbnail; // Default to current thumbnail URL
-
       // If a new thumbnail is selected, upload it first
       if (thumbnail) {
-        imageUrl = await uploadImage(); // Update image URL with the new uploaded image
+        await uploadImage();
+      } else {
+        // Update the blog with the latest state values
+        await updateBlog();
       }
-
-      // Update the blog with the latest state values
-      await updateBlog(imageUrl);
     } catch (error) {
       console.error("Error updating post:", error);
       toast.error("Error updating post");
@@ -78,14 +83,14 @@ function EditBlog() {
     try {
       const snapshot = await uploadBytes(imageRef, thumbnail);
       const url = await getDownloadURL(snapshot.ref);
-      return url; // Return the URL of the uploaded image
+      await updateBlog(url); // Pass the URL to update the blog post
     } catch (error) {
       console.error("Error uploading image: ", error);
       toast.error("Error uploading image");
     }
   };
 
-  const updateBlog = async (imageUrl) => {
+  const updateBlog = async (imageUrl = currentThumbnail) => {
     const blogRef = doc(fireDb, "blogPost", id);
     try {
       await updateDoc(blogRef, {
@@ -116,8 +121,8 @@ function EditBlog() {
           background: mode === "dark" ? "#353b48" : "rgb(226, 232, 240)",
           borderBottom:
             mode === "dark"
-              ? "4px solid rgb(226, 232, 240)"
-              : "4px solid rgb(30, 41, 59)",
+              ? " 4px solid rgb(226, 232, 240)"
+              : " 4px solid rgb(30, 41, 59)",
         }}
       >
         {/* Top Item */}
@@ -177,7 +182,7 @@ function EditBlog() {
           <input
             type="text"
             className={`shadow-[inset_0_0_4px_rgba(0,0,0,0.6)] w-full rounded-md p-1.5 outline-none ${
-              mode === "dark" ? "placeholder-white" : "placeholder-gray-500"
+              mode === "dark" ? "placeholder-black" : "placeholder-black"
             }`}
             placeholder="Enter Your Title"
             style={{
@@ -195,7 +200,7 @@ function EditBlog() {
           <input
             type="text"
             className={`shadow-[inset_0_0_4px_rgba(0,0,0,0.6)] w-full rounded-md p-1.5 outline-none ${
-              mode === "dark" ? "placeholder-white" : "placeholder-gray-500"
+              mode === "dark" ? "placeholder-black" : "placeholder-black"
             }`}
             placeholder="Enter Your Category"
             style={{
@@ -211,19 +216,21 @@ function EditBlog() {
         {/* Editor */}
         <Editor
           apiKey="7tpqrdfglcn651x8kwliw2run7rze6zzvgvrob6lux0hc7ya"
-          initialValue={blogs.content}
-          value={blogs.content}
+          value={blogs.content} // Ensure controlled component behavior
           onEditorChange={(content) => {
-            setBlogs({ ...blogs, content });
+            setBlogs({ ...blogs, content }); // Update content in state
           }}
           init={{
-            plugins: "a11ychecker advcode advlist advtable anchor autocorrect autolink autoresize autosave casechange charmap checklist code codesample directionality editimage emoticons export footnotes formatpainter fullscreen help image importcss inlinecss insertdatetime link linkchecker lists media mediaembed mentions mergetags nonbreaking pagebreak pageembed permanentpen powerpaste preview quickbars save searchreplace table tableofcontents template tinydrive tinymcespellchecker typography visualblocks visualchars wordcount",
-            toolbar: "undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
+            plugins: "a11ychecker advcode advlist advtable anchor autocorrect autolink autoresize autosave casechange charmap checklist code codesample directionality editimage emoticons export footnotes formatpainter fullscreen help image importcss inlinecss insertdatetime link linkchecker lists media mediaembed mentions mergetags nonbreaking pagebreak permanentpen powerpaste preview quickbars save searchreplace table tableofcontents template  tinydrive tinymcespellchecker typography visualblocks visualchars wordcount",
+            toolbar: "YOUR_TOOLBAR_CONFIG",
             height: 400,
             menubar: true,
             branding: false,
             resize: "both",
             paste_data_images: true,
+            images_upload_handler: (blobInfo, success, failure) => {
+              // Handle image upload here if needed
+            },
           }}
         />
 

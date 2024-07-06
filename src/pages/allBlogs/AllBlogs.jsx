@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import myContext from '../../context/data/myContext';
 import Layout from '../../components/layout/Layout';
 import { useNavigate } from 'react-router';
@@ -7,16 +7,19 @@ import DOMPurify from 'dompurify';
 function AllBlogs() {
     const context = useContext(myContext);
     const { mode, getAllBlog } = context;
-
+    const [blogs, setBlogs] = useState(getAllBlog);
     const navigate = useNavigate();
 
     // Helper function to truncate text and remove HTML tags
     const truncateText = (text, limit, id) => {
         const sanitizedText = DOMPurify.sanitize(text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
-        if (sanitizedText.length <= limit) return sanitizedText;
+        const cleanedText = sanitizedText.replace(/&nbsp;/g, ' ');
+
+        if (cleanedText.length <= limit) return cleanedText;
+
         return (
             <>
-                {sanitizedText.substring(0, limit)}
+                {cleanedText.substring(0, limit)}
                 <span
                     style={{
                         color: 'blue',
@@ -32,6 +35,17 @@ function AllBlogs() {
     };
 
     useEffect(() => {
+        const fetchBlogs = async () => {
+            try {
+                const response = await fetch('/api/blogs'); // Adjust the API endpoint as needed
+                const data = await response.json();
+                setBlogs(data);
+            } catch (error) {
+                console.error("Error fetching blogs:", error);
+            }
+        };
+
+        fetchBlogs();
         window.scrollTo(0, 0);
     }, []);
 
@@ -49,8 +63,8 @@ function AllBlogs() {
                     {/* Main Content */}
                     <div className="flex flex-wrap justify-center -m-4 mb-5">
                         {/* Blog Cards */}
-                        {getAllBlog.length > 0 ? (
-                            getAllBlog.map((item) => {
+                        {blogs.length > 0 ? (
+                            blogs.map((item) => {
                                 const { thumbnail, date, id, blogs } = item;
                                 return (
                                     <div key={id} className="p-4 md:w-1/2 lg:w-1/3">
@@ -62,11 +76,12 @@ function AllBlogs() {
                                             className={`h-full shadow-lg hover:-translate-y-1 cursor-pointer hover:shadow-gray-400 ${mode === 'dark' ? 'shadow-gray-700' : 'shadow-xl'} rounded-xl overflow-hidden transition-transform transform duration-300`}
                                         >
                                             {/* Blog Thumbnail */}
-                                            <img 
+                                            <img
                                                 onClick={() => navigate(`/bloginfo/${id}`)}
                                                 className="w-full h-64 object-cover object-top"
                                                 src={thumbnail}
-                                                alt="blog"
+                                                alt={blogs.title || "Blog Thumbnail"}
+                                                role="button"
                                             />
 
                                             {/* Top Items */}
