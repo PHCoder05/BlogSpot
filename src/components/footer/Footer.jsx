@@ -14,7 +14,7 @@ function Footer() {
         <div className="flex items-center space-x-4">
           <img
             className="w-12 h-12 rounded-full"
-            src="src/assets/Screenshot_5.jpg"
+            src="src/assets/screenshot_5.jpg"
             alt="logo"
           />
           <span className="text-xl font-semibold md:text-2xl">PHCoder05</span>
