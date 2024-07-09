@@ -81,7 +81,7 @@ export default function Nav() {
                             {/* Logo Image  */}
                             <img
                                 className=' w-10 h-10 '
-                                src='src\assets\Screenshot_5.jpg'
+                                src='https://i.postimg.cc/ncrXtppP/Screenshot-5.jpg'
                             />
                             {/* Logo Text  */}
                             <span>
