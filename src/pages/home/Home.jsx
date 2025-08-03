@@ -486,7 +486,7 @@ function Home() {
                             <div className="flex items-center gap-1">
                               <FaEye className={`w-4 h-4 ${mode === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
                               <span className={`${mode === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-xs`}>
-                                {Math.floor(Math.random() * 1000) + 100} views
+                                {blog.blogs?.views || 25} views
                               </span>
                             </div>
                           </div>

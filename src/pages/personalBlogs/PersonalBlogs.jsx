@@ -201,14 +201,70 @@ function PersonalBlogs() {
         console.log('Bookmarked personal blog:', blogId);
     };
 
-    // If no access, show access modal
+    // If no access, show access modal with proper layout
     if (!hasAccess) {
         return (
-            <AccessCodeModal 
-                isOpen={showAccessModal}
-                onClose={() => setShowAccessModal(false)}
-                onSuccess={handleAccessSuccess}
-            />
+            <Layout>
+                <SEOComponent 
+                    type="personalblogs" 
+                    currentUrl={window.location.href}
+                    totalBlogs={0}
+                />
+                <section className={`min-h-screen py-8 ${
+                    mode === 'dark' ? 'bg-gray-900' : 'bg-gray-50'
+                }`}>
+                    <div className="container mx-auto px-4 max-w-7xl">
+                        {/* Header Section */}
+                        <div className="text-center mb-8">
+                            <div className="flex items-center justify-center mb-4">
+                                <FaKey className="w-8 h-8 text-teal-500 mr-3" />
+                                <h1 className={`text-4xl md:text-5xl font-bold ${
+                                    mode === 'dark' ? 'text-white' : 'text-gray-800'
+                                }`}>
+                                    Personal Thoughts
+                                </h1>
+                            </div>
+                            <p className={`text-lg mb-4 ${
+                                mode === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                            }`}>
+                                Private reflections and personal insights
+                            </p>
+                        </div>
+                        
+                        {/* Access Required Message */}
+                        <div className={`text-center py-12 ${
+                            mode === 'dark' ? 'bg-gray-800' : 'bg-white'
+                        } rounded-xl shadow-lg`}>
+                            <div className="mx-auto w-16 h-16 bg-teal-100 dark:bg-teal-900 rounded-full flex items-center justify-center mb-4">
+                                <FaKey className="w-8 h-8 text-teal-600 dark:text-teal-400" />
+                            </div>
+                            <h2 className={`text-2xl font-bold mb-4 ${
+                                mode === 'dark' ? 'text-white' : 'text-gray-800'
+                            }`}>
+                                Access Required
+                            </h2>
+                            <p className={`text-lg mb-6 ${
+                                mode === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                            }`}>
+                                Please enter your access code to view personal thoughts and reflections.
+                            </p>
+                            <button
+                                onClick={() => setShowAccessModal(true)}
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors duration-200"
+                            >
+                                <FaKey className="w-4 h-4" />
+                                Enter Access Code
+                            </button>
+                        </div>
+                    </div>
+                </section>
+                
+                <AccessCodeModal 
+                    isOpen={showAccessModal}
+                    onClose={() => setShowAccessModal(false)}
+                    onSuccess={handleAccessSuccess}
+                />
+            </Layout>
         );
     }
 

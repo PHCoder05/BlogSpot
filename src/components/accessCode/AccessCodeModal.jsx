@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import myContext from '../../context/data/myContext';
 import { verifyAccessCode, isAccessCodeVerified } from '../../utils/accessCodeUtils';
 import { FaKey, FaEye, FaEyeSlash, FaTimes } from 'react-icons/fa';
@@ -7,31 +7,39 @@ import toast from 'react-hot-toast';
 const AccessCodeModal = ({ isOpen, onClose, onSuccess }) => {
     const context = useContext(myContext);
     const { mode } = context;
-    
+
     const [accessCode, setAccessCode] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isVerifying, setIsVerifying] = useState(false);
 
-    // If already verified, close modal and call success
-    if (isOpen && isAccessCodeVerified()) {
+    // Handle already verified access code
+    useEffect(() => {
+        if (isOpen && isAccessCodeVerified()) {
+            onSuccess();
+            onClose();
+        }
+    }, [isOpen, onSuccess, onClose]);
+
+    const handleClose = () => {
+        setAccessCode('');
+        setShowPassword(false);
+        setIsVerifying(false);
         onClose();
-        onSuccess();
-        return null;
-    }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (!accessCode.trim()) {
             toast.error('Please enter an access code');
             return;
         }
 
         setIsVerifying(true);
-        
+
         try {
             const result = await verifyAccessCode(accessCode.trim());
-            
+
             if (result.success) {
                 toast.success(result.message);
                 onSuccess();
@@ -40,17 +48,10 @@ const AccessCodeModal = ({ isOpen, onClose, onSuccess }) => {
                 toast.error(result.message);
             }
         } catch (error) {
-            console.error('Error during verification:', error);
-            toast.error('Error verifying access code');
+            toast.error('An error occurred while verifying the access code');
         } finally {
             setIsVerifying(false);
         }
-    };
-
-    const handleClose = () => {
-        setAccessCode('');
-        setShowPassword(false);
-        onClose();
     };
 
     if (!isOpen) return null;
@@ -92,8 +93,8 @@ const AccessCodeModal = ({ isOpen, onClose, onSuccess }) => {
                                 onChange={(e) => setAccessCode(e.target.value)}
                                 placeholder="Enter your access code"
                                 className={`w-full px-4 py-3 pr-12 rounded-lg border-2 focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
-                                    mode === 'dark' 
-                                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                                    mode === 'dark'
+                                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
                                         : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
                                 }`}
                                 autoFocus
