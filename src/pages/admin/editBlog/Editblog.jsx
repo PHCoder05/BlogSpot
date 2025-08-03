@@ -33,6 +33,8 @@ function EditBlog() {
   const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewMode, setPreviewMode] = useState('desktop'); // 'desktop', 'tablet', 'mobile'
   const quillRef = React.useRef(null);
 
   const categories = [
@@ -139,6 +141,30 @@ function EditBlog() {
     }
   };
 
+  const validateImageUrl = (url) => {
+    if (!url.trim()) {
+      return false;
+    }
+    
+    try {
+      new URL(url.trim());
+    } catch (error) {
+      toast.error("Please enter a valid URL");
+      return false;
+    }
+    
+    // Validate that it's an image URL
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+    const urlLower = url.trim().toLowerCase();
+    const hasImageExtension = imageExtensions.some(ext => urlLower.includes(ext));
+    
+    if (!hasImageExtension && !urlLower.includes('data:image/')) {
+      toast.warning("URL might not be an image. Please ensure it's a valid image URL.");
+    }
+    
+    return true;
+  };
+
   const updatePost = async () => {
     if (blogs.title.trim() === "") {
       return toast.error("Title is required");
@@ -154,6 +180,11 @@ function EditBlog() {
     }
     if (!thumbnail && !currentThumbnail && !thumbnailLink.trim()) {
       return toast.error("Thumbnail is required - either upload an image, provide a link, or keep existing thumbnail");
+    }
+    
+    // Validate thumbnail link if provided
+    if (thumbnailLink.trim() && !validateImageUrl(thumbnailLink)) {
+      return;
     }
 
     setLoading(true);
@@ -243,6 +274,45 @@ function EditBlog() {
             >
               Edit Blog Post
             </Typography>
+          </div>
+        </div>
+
+        {/* All Options Overview */}
+        <div className="mb-6 p-4 rounded-lg border-2 border-dashed border-gray-300" style={{
+          background: mode === "dark" ? "#2d3748" : "#f7fafc"
+        }}>
+          <Typography
+            variant="h6"
+            className="mb-3 font-semibold flex items-center gap-2"
+            style={{ color: mode === "dark" ? "white" : "black" }}
+          >
+            📋 All Available Options
+          </Typography>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${blogs.title ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+              <span style={{ color: mode === "dark" ? "white" : "black" }}>Blog Title</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${(currentThumbnail || thumbnail || thumbnailLink) ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+              <span style={{ color: mode === "dark" ? "white" : "black" }}>Thumbnail (File/URL)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${blogs.category ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+              <span style={{ color: mode === "dark" ? "white" : "black" }}>Category</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${tags.length > 0 ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+              <span style={{ color: mode === "dark" ? "white" : "black" }}>Tags ({tags.length}/10)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${blogs.content && blogs.content !== '<p><br></p>' ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+              <span style={{ color: mode === "dark" ? "white" : "black" }}>Content ({blogs.content ? blogs.content.split(' ').length : 0} words)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${showPreview ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+              <span style={{ color: mode === "dark" ? "white" : "black" }}>Preview Mode</span>
+            </div>
           </div>
         </div>
 
@@ -356,6 +426,11 @@ function EditBlog() {
                 placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
                 value={thumbnailLink}
                 onChange={(e) => setThumbnailLink(e.target.value)}
+                onBlur={() => {
+                  if (thumbnailLink.trim()) {
+                    validateImageUrl(thumbnailLink);
+                  }
+                }}
               />
               {thumbnailLink && (
                 <div className="relative">
@@ -538,6 +613,59 @@ function EditBlog() {
           )}
         </div>
 
+        {/* Publish Status */}
+        <div className="mb-6 p-4 rounded-lg border-2 border-dashed border-gray-300" style={{
+          background: mode === "dark" ? "#2d3748" : "#f7fafc"
+        }}>
+          <Typography
+            variant="h6"
+            className="mb-3 font-semibold flex items-center gap-2"
+            style={{ color: mode === "dark" ? "white" : "black" }}
+          >
+            📊 Update Status
+          </Typography>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span style={{ color: mode === "dark" ? "white" : "black" }}>Title:</span>
+              <span className={blogs.title ? 'text-green-500' : 'text-red-500'}>
+                {blogs.title ? '✓ Complete' : '✗ Required'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span style={{ color: mode === "dark" ? "white" : "black" }}>Thumbnail:</span>
+              <span className={(currentThumbnail || thumbnail || thumbnailLink) ? 'text-green-500' : 'text-yellow-500'}>
+                {(currentThumbnail || thumbnail || thumbnailLink) ? '✓ Complete' : '⚠ Optional'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span style={{ color: mode === "dark" ? "white" : "black" }}>Category:</span>
+              <span className={blogs.category ? 'text-green-500' : 'text-red-500'}>
+                {blogs.category ? '✓ Complete' : '✗ Required'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span style={{ color: mode === "dark" ? "white" : "black" }}>Content:</span>
+              <span className={blogs.content && blogs.content !== '<p><br></p>' ? 'text-green-500' : 'text-red-500'}>
+                {blogs.content && blogs.content !== '<p><br></p>' ? '✓ Complete' : '✗ Required'}
+              </span>
+            </div>
+            <div className="pt-2 border-t border-gray-300">
+              <div className="flex justify-between font-semibold">
+                <span style={{ color: mode === "dark" ? "white" : "black" }}>Overall:</span>
+                <span className={
+                  blogs.title && blogs.category && 
+                  blogs.content && blogs.content !== '<p><br></p>' 
+                    ? 'text-green-500' : 'text-yellow-500'
+                }>
+                  {blogs.title && blogs.category && 
+                   blogs.content && blogs.content !== '<p><br></p>' 
+                    ? '✓ Ready to Update' : '⚠ Needs Completion'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Content Editor */}
         <div className="mb-6">
           <Typography
@@ -612,42 +740,148 @@ function EditBlog() {
           </Button>
         </div>
 
-        {/* Preview Section */}
-        {blogs.content && (
-          <div className="border-t-2 pt-6" style={{
-            borderColor: mode === "dark" ? '#4B5563' : '#E5E7EB'
-          }}>
+        {/* Enhanced Preview Section */}
+        <div className="border-t-2 pt-6" style={{
+          borderColor: mode === "dark" ? '#4B5563' : '#E5E7EB'
+        }}>
+          <div className="flex justify-between items-center mb-4">
             <Typography
               variant="h5"
-              className="text-center mb-4 font-bold"
+              className="font-bold"
               style={{ color: mode === "dark" ? "white" : "black" }}
             >
-              Preview
+              📱 Preview Options
             </Typography>
-            <div className="bg-white rounded-lg p-6 shadow-lg">
-              <div
-                className={`
-                prose prose-lg max-w-none
-                [&> h1]:text-[32px] [&>h1]:font-bold [&>h1]:mb-2.5 [&>h1]:text-red-600
-                [&>h2]:text-[24px] [&>h2]:font-bold [&>h2]:mb-2.5 [&>h2]:text-gray-800
-                [&>h3]:text-[18.72px] [&>h3]:font-bold [&>h3]:mb-2.5 [&>h3]:text-gray-800
-                [&>h4]:text-[16px] [&>h4]:font-bold [&>h4]:mb-2.5 [&>h4]:text-gray-800
-                [&>h5]:text-[13.28px] [&>h5]:font-bold [&>h5]:mb-2.5 [&>h5]:text-gray-800
-                [&>h6]:text-[10px] [&>h6]:font-bold [&>h6]:mb-2.5 [&>h6]:text-gray-800
-                [&>p]:text-[16px] [&>p]:mb-1.5 [&>p]:text-gray-700
-                [&>ul]:list-disc [&>ul]:mb-2 [&>ul]:text-gray-700
-                [&>ol]:list-decimal [&>ol]:mb-2 [&>ol]:text-gray-700
-                [&>li]:mb-1 [&>li]:text-gray-700
-                [&>img]:rounded-lg [&>img]:max-w-full [&>img]:h-auto
-                [&>blockquote]:border-l-4 [&>blockquote]:border-gray-300 [&>blockquote]:pl-4 [&>blockquote]:italic
-                [&>code]:bg-gray-100 [&>code]:px-2 [&>code]:py-1 [&>code]:rounded [&>code]:text-sm
-                [&>pre]:bg-gray-100 [&>pre]:p-4 [&>pre]:rounded [&>pre]:overflow-x-auto
-                `}
-                dangerouslySetInnerHTML={createMarkup(blogs.content)}
-              />
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant={showPreview ? "filled" : "outlined"}
+                onClick={() => setShowPreview(!showPreview)}
+                className="flex items-center gap-2"
+              >
+                {showPreview ? 'Hide Preview' : 'Show Preview'}
+              </Button>
             </div>
           </div>
-        )}
+
+          {showPreview && (
+            <div className="space-y-4">
+              {/* Preview Mode Selector */}
+              <div className="flex gap-2 mb-4">
+                <Button
+                  size="sm"
+                  variant={previewMode === 'desktop' ? "filled" : "outlined"}
+                  onClick={() => setPreviewMode('desktop')}
+                >
+                  Desktop
+                </Button>
+                <Button
+                  size="sm"
+                  variant={previewMode === 'tablet' ? "filled" : "outlined"}
+                  onClick={() => setPreviewMode('tablet')}
+                >
+                  Tablet
+                </Button>
+                <Button
+                  size="sm"
+                  variant={previewMode === 'mobile' ? "filled" : "outlined"}
+                  onClick={() => setPreviewMode('mobile')}
+                >
+                  Mobile
+                </Button>
+              </div>
+
+              {/* Preview Container */}
+              <div className={`border-2 border-gray-300 rounded-lg overflow-hidden ${
+                previewMode === 'desktop' ? 'w-full' :
+                previewMode === 'tablet' ? 'w-3/4 mx-auto' :
+                'w-1/2 mx-auto'
+              }`}>
+                <div className="bg-gray-100 p-2 border-b border-gray-300">
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1">
+                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    </div>
+                    <span className="text-xs text-gray-600">
+                      {previewMode === 'desktop' ? 'Desktop View' :
+                       previewMode === 'tablet' ? 'Tablet View' : 'Mobile View'}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="bg-white p-6 min-h-[400px]">
+                  {/* Blog Preview Content */}
+                  <div className="mb-4">
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                      {blogs.title || 'Your Blog Title'}
+                    </h1>
+                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                      <span>By Pankaj Hadole</span>
+                      <span>•</span>
+                      <span>{new Date().toLocaleDateString()}</span>
+                      <span>•</span>
+                      <span>{blogs.category || 'Category'}</span>
+                      <span>•</span>
+                      <span>~{Math.ceil((blogs.content || '').split(' ').length / 200)} min read</span>
+                    </div>
+                    {tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {tags.map((tag, index) => (
+                          <span 
+                            key={index} 
+                            className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Thumbnail Preview */}
+                  {(currentThumbnail || thumbnail || thumbnailLink) && (
+                    <div className="mb-4">
+                      <img 
+                        className="w-full h-48 object-cover rounded-lg"
+                        src={thumbnail ? URL.createObjectURL(thumbnail) : 
+                              thumbnailLink || currentThumbnail}
+                        alt="blog thumbnail"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Content Preview */}
+                  <div className="prose prose-sm max-w-none">
+                    <div
+                      className={`
+                      [&> h1]:text-[24px] [&>h1]:font-bold [&>h1]:mb-2.5 [&>h1]:text-gray-900
+                      [&>h2]:text-[20px] [&>h2]:font-bold [&>h2]:mb-2.5 [&>h2]:text-gray-800
+                      [&>h3]:text-[18px] [&>h3]:font-bold [&>h3]:mb-2.5 [&>h3]:text-gray-800
+                      [&>h4]:text-[16px] [&>h4]:font-bold [&>h4]:mb-2.5 [&>h4]:text-gray-800
+                      [&>h5]:text-[14px] [&>h5]:font-bold [&>h5]:mb-2.5 [&>h5]:text-gray-800
+                      [&>h6]:text-[12px] [&>h6]:font-bold [&>h6]:mb-2.5 [&>h6]:text-gray-800
+                      [&>p]:text-[14px] [&>p]:mb-1.5 [&>p]:text-gray-700
+                      [&>ul]:list-disc [&>ul]:mb-2 [&>ul]:text-gray-700
+                      [&>ol]:list-decimal [&>ol]:mb-2 [&>ol]:text-gray-700
+                      [&>li]:mb-1 [&>li]:text-gray-700
+                      [&>img]:rounded-lg [&>img]:max-w-full [&>img]:h-auto
+                      [&>blockquote]:border-l-4 [&>blockquote]:border-gray-300 [&>blockquote]:pl-4 [&>blockquote]:italic
+                      [&>code]:bg-gray-100 [&>code]:px-2 [&>code]:py-1 [&>code]:rounded [&>code]:text-sm
+                      [&>pre]:bg-gray-100 [&>pre]:p-4 [&>pre]:rounded [&>pre]:overflow-x-auto
+                      `}
+                      dangerouslySetInnerHTML={createMarkup(blogs.content || '<p>Start writing your blog content...</p>')}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

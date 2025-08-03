@@ -211,7 +211,10 @@ function CreateBlog() {
     const [tags, setTags] = useState([]);
     const [image, setImage] = useState(null);
     const [imageUrl, setImageUrl] = useState('');
+    const [uploadMethod, setUploadMethod] = useState('file'); // 'file' or 'link'
     const [loading, setLoading] = useState(false);
+    const [showPreview, setShowPreview] = useState(false);
+    const [previewMode, setPreviewMode] = useState('desktop'); // 'desktop', 'tablet', 'mobile'
     const quillRef = React.useRef(null);
 
     // ReactQuill modules configuration
@@ -383,6 +386,34 @@ console.log(greet('World'));</code></pre>
         }
     };
 
+    const handleImageUrlSubmit = () => {
+        if (!imageUrl.trim()) {
+            toast.error("Please enter an image URL");
+            return;
+        }
+        
+        // Basic URL validation
+        try {
+            new URL(imageUrl.trim());
+        } catch (error) {
+            toast.error("Please enter a valid URL");
+            return;
+        }
+        
+        // Validate that it's an image URL
+        const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+        const url = imageUrl.trim().toLowerCase();
+        const hasImageExtension = imageExtensions.some(ext => url.includes(ext));
+        
+        if (!hasImageExtension && !url.includes('data:image/')) {
+            toast.warning("URL might not be an image. Please ensure it's a valid image URL.");
+        }
+        
+        // Clear any uploaded file when using URL
+        setImage(null);
+        toast.success("Image URL set successfully!");
+    };
+
     const clearDraft = () => {
         setBlogs({
             title: '',
@@ -398,6 +429,7 @@ console.log(greet('World'));</code></pre>
         setTags([]);
         setImage(null);
         setImageUrl('');
+        setUploadMethod('file');
         toast.success('Draft cleared!');
     };
 
@@ -549,15 +581,23 @@ console.log(greet('World'));</code></pre>
                                         Blog Thumbnail
                                     </Typography>
                                     
-                                    {image && (
+                                    {/* Thumbnail Preview */}
+                                    {(image || imageUrl) && (
                                         <div className="mb-4 relative">
                                             <img 
                                                 className="w-full max-h-64 object-cover rounded-lg border-2 border-gray-300"
-                                                src={URL.createObjectURL(image)}
+                                                src={image ? URL.createObjectURL(image) : imageUrl}
                                                 alt="thumbnail preview"
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                    toast.error("Invalid image URL");
+                                                }}
                                             />
                                             <button
-                                                onClick={() => setImage(null)}
+                                                onClick={() => {
+                                                    setImage(null);
+                                                    setImageUrl('');
+                                                }}
                                                 className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 transition-colors"
                                             >
                                                 ×
@@ -565,31 +605,108 @@ console.log(greet('World'));</code></pre>
                                         </div>
                                     )}
                                     
-                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-teal-400 transition-colors cursor-pointer">
-                                        <input
-                                            type="file"
-                                            className="hidden"
-                                            id="thumbnail-upload"
-                                            onChange={handleThumbnailChange}
-                                            accept="image/*"
-                                        />
-                                        <label 
-                                            htmlFor="thumbnail-upload" 
-                                            className="cursor-pointer block"
-                                        >
-                                            <div className="text-gray-600 mb-4">
-                                                <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                                </svg>
-                                            </div>
-                                            <p className="text-lg font-medium text-gray-700 mb-2">
-                                                {image ? 'Click to change image' : 'Click to upload thumbnail'}
-                                            </p>
-                                            <p className="text-sm text-gray-500">
-                                                PNG, JPG, GIF up to 10MB
-                                            </p>
-                                        </label>
+                                    {/* Upload Options Tabs */}
+                                    <div className="mb-4">
+                                        <div className="flex border-b border-gray-300">
+                                            <button
+                                                onClick={() => setUploadMethod('file')}
+                                                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                                                    uploadMethod === 'file'
+                                                        ? 'border-b-2 border-teal-500 text-teal-600'
+                                                        : 'text-gray-500 hover:text-gray-700'
+                                                }`}
+                                            >
+                                                Upload File
+                                            </button>
+                                            <button
+                                                onClick={() => setUploadMethod('link')}
+                                                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                                                    uploadMethod === 'link'
+                                                        ? 'border-b-2 border-teal-500 text-teal-600'
+                                                        : 'text-gray-500 hover:text-gray-700'
+                                                }`}
+                                            >
+                                                Image URL
+                                            </button>
+                                        </div>
                                     </div>
+                                    
+                                    {/* File Upload Option */}
+                                    {uploadMethod === 'file' && (
+                                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-teal-400 transition-colors cursor-pointer">
+                                            <input
+                                                type="file"
+                                                className="hidden"
+                                                id="thumbnail-upload"
+                                                onChange={handleThumbnailChange}
+                                                accept="image/*"
+                                            />
+                                            <label 
+                                                htmlFor="thumbnail-upload" 
+                                                className="cursor-pointer block"
+                                            >
+                                                <div className="text-gray-600 mb-4">
+                                                    <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                                    </svg>
+                                                </div>
+                                                <p className="text-lg font-medium text-gray-700 mb-2">
+                                                    {image ? 'Click to change image' : 'Click to upload thumbnail'}
+                                                </p>
+                                                <p className="text-sm text-gray-500">
+                                                    PNG, JPG, GIF up to 10MB
+                                                </p>
+                                            </label>
+                                        </div>
+                                    )}
+                                    
+                                    {/* Image URL Option */}
+                                    {uploadMethod === 'link' && (
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    Image URL
+                                                </label>
+                                                <input
+                                                    type="url"
+                                                    value={imageUrl}
+                                                    onChange={(e) => setImageUrl(e.target.value)}
+                                                    placeholder="https://example.com/image.jpg"
+                                                    onBlur={() => {
+                                                        if (imageUrl.trim()) {
+                                                            // Basic URL validation
+                                                            try {
+                                                                new URL(imageUrl.trim());
+                                                            } catch (error) {
+                                                                toast.error("Please enter a valid URL");
+                                                                return;
+                                                            }
+                                                            
+                                                            // Validate that it's an image URL
+                                                            const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+                                                            const url = imageUrl.trim().toLowerCase();
+                                                            const hasImageExtension = imageExtensions.some(ext => url.includes(ext));
+                                                            
+                                                            if (!hasImageExtension && !url.includes('data:image/')) {
+                                                                toast.warning("URL might not be an image. Please ensure it's a valid image URL.");
+                                                            }
+                                                        }
+                                                    }}
+                                                    className={`w-full p-3 border-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 ${
+                                                        mode === 'dark' 
+                                                            ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                                                            : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                                                    }`}
+                                                />
+                                            </div>
+                                            <button
+                                                onClick={handleImageUrlSubmit}
+                                                className="w-full py-2 px-4 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
+                                            >
+                                                Set Image from URL
+                                            </button>
+                                        </div>
+                                    )}
                                 </CardBody>
                             </Card>
 
@@ -639,6 +756,148 @@ console.log(greet('World'));</code></pre>
                                 </CardBody>
                             </Card>
 
+                            {/* Preview Section */}
+                            <Card className={mode === 'dark' ? 'bg-gray-800' : 'bg-white'}>
+                                <CardBody className="p-6">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <Typography
+                                            variant="h6"
+                                            className="font-semibold flex items-center gap-2"
+                                            style={{ color: mode === 'dark' ? 'white' : 'black' }}
+                                        >
+                                            Preview Options
+                                        </Typography>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                size="sm"
+                                                variant={showPreview ? "filled" : "outlined"}
+                                                onClick={() => setShowPreview(!showPreview)}
+                                                className="flex items-center gap-2"
+                                            >
+                                                {showPreview ? 'Hide Preview' : 'Show Preview'}
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    {showPreview && (
+                                        <div className="space-y-4">
+                                            {/* Preview Mode Selector */}
+                                            <div className="flex gap-2 mb-4">
+                                                <Button
+                                                    size="sm"
+                                                    variant={previewMode === 'desktop' ? "filled" : "outlined"}
+                                                    onClick={() => setPreviewMode('desktop')}
+                                                >
+                                                    Desktop
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant={previewMode === 'tablet' ? "filled" : "outlined"}
+                                                    onClick={() => setPreviewMode('tablet')}
+                                                >
+                                                    Tablet
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant={previewMode === 'mobile' ? "filled" : "outlined"}
+                                                    onClick={() => setPreviewMode('mobile')}
+                                                >
+                                                    Mobile
+                                                </Button>
+                                            </div>
+
+                                            {/* Preview Container */}
+                                            <div className={`border-2 border-gray-300 rounded-lg overflow-hidden ${
+                                                previewMode === 'desktop' ? 'w-full' :
+                                                previewMode === 'tablet' ? 'w-3/4 mx-auto' :
+                                                'w-1/2 mx-auto'
+                                            }`}>
+                                                <div className="bg-gray-100 p-2 border-b border-gray-300">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex gap-1">
+                                                            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                                                            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                                                        </div>
+                                                        <span className="text-xs text-gray-600">
+                                                            {previewMode === 'desktop' ? 'Desktop View' :
+                                                             previewMode === 'tablet' ? 'Tablet View' : 'Mobile View'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="bg-white p-6 min-h-[400px]">
+                                                    {/* Blog Preview Content */}
+                                                    <div className="mb-4">
+                                                        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                                                            {blogs.title || 'Your Blog Title'}
+                                                        </h1>
+                                                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                                                            <span>By Pankaj Hadole</span>
+                                                            <span>•</span>
+                                                            <span>{new Date().toLocaleDateString()}</span>
+                                                            <span>•</span>
+                                                            <span>{blogs.category || 'Category'}</span>
+                                                            <span>•</span>
+                                                            <span>~{blogs.readingTime} min read</span>
+                                                        </div>
+                                                        {tags.length > 0 && (
+                                                            <div className="flex flex-wrap gap-2 mb-4">
+                                                                {tags.map((tag, index) => (
+                                                                    <span 
+                                                                        key={index} 
+                                                                        className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
+                                                                    >
+                                                                        #{tag}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    
+                                                    {/* Thumbnail Preview */}
+                                                    {(image || imageUrl) && (
+                                                        <div className="mb-4">
+                                                            <img 
+                                                                className="w-full h-48 object-cover rounded-lg"
+                                                                src={image ? URL.createObjectURL(image) : imageUrl}
+                                                                alt="blog thumbnail"
+                                                                onError={(e) => {
+                                                                    e.target.style.display = 'none';
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    
+                                                    {/* Content Preview */}
+                                                    <div className="prose prose-sm max-w-none">
+                                                        <div
+                                                            className={`
+                                                            [&> h1]:text-[24px] [&>h1]:font-bold [&>h1]:mb-2.5 [&>h1]:text-gray-900
+                                                            [&>h2]:text-[20px] [&>h2]:font-bold [&>h2]:mb-2.5 [&>h2]:text-gray-800
+                                                            [&>h3]:text-[18px] [&>h3]:font-bold [&>h3]:mb-2.5 [&>h3]:text-gray-800
+                                                            [&>h4]:text-[16px] [&>h4]:font-bold [&>h4]:mb-2.5 [&>h4]:text-gray-800
+                                                            [&>h5]:text-[14px] [&>h5]:font-bold [&>h5]:mb-2.5 [&>h5]:text-gray-800
+                                                            [&>h6]:text-[12px] [&>h6]:font-bold [&>h6]:mb-2.5 [&>h6]:text-gray-800
+                                                            [&>p]:text-[14px] [&>p]:mb-1.5 [&>p]:text-gray-700
+                                                            [&>ul]:list-disc [&>ul]:mb-2 [&>ul]:text-gray-700
+                                                            [&>ol]:list-decimal [&>ol]:mb-2 [&>ol]:text-gray-700
+                                                            [&>li]:mb-1 [&>li]:text-gray-700
+                                                            [&>img]:rounded-lg [&>img]:max-w-full [&>img]:h-auto
+                                                            [&>blockquote]:border-l-4 [&>blockquote]:border-gray-300 [&>blockquote]:pl-4 [&>blockquote]:italic
+                                                            [&>code]:bg-gray-100 [&>code]:px-2 [&>code]:py-1 [&>code]:rounded [&>code]:text-sm
+                                                            [&>pre]:bg-gray-100 [&>pre]:p-4 [&>pre]:rounded [&>pre]:overflow-x-auto
+                                                            `}
+                                                            dangerouslySetInnerHTML={createMarkup(blogs.content || '<p>Start writing your blog content...</p>')}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </CardBody>
+                            </Card>
+
                             {/* Submit Button */}
                             <Card className={mode === 'dark' ? 'bg-gray-800' : 'bg-white'}>
                                 <CardBody className="p-6">
@@ -665,6 +924,45 @@ console.log(greet('World'));</code></pre>
                         {/* Sidebar */}
                         <div className="space-y-6">
                             
+                            {/* All Options Overview */}
+                            <Card className={mode === 'dark' ? 'bg-gray-800' : 'bg-white'}>
+                                <CardBody className="p-6">
+                                    <Typography
+                                        variant="h6"
+                                        className="mb-4 font-semibold flex items-center gap-2"
+                                        style={{ color: mode === 'dark' ? 'white' : 'black' }}
+                                    >
+                                        📋 All Available Options
+                                    </Typography>
+                                    <div className="space-y-3 text-sm">
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-2 h-2 rounded-full ${blogs.title ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                                            <span style={{ color: mode === 'dark' ? 'white' : 'black' }}>Blog Title</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-2 h-2 rounded-full ${(image || imageUrl) ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                                            <span style={{ color: mode === 'dark' ? 'white' : 'black' }}>Thumbnail (File/URL)</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-2 h-2 rounded-full ${blogs.category ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                                            <span style={{ color: mode === 'dark' ? 'white' : 'black' }}>Category</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-2 h-2 rounded-full ${tags.length > 0 ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                                            <span style={{ color: mode === 'dark' ? 'white' : 'black' }}>Tags ({tags.length}/15)</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-2 h-2 rounded-full ${blogs.content && blogs.content !== '<p><br></p>' ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                                            <span style={{ color: mode === 'dark' ? 'white' : 'black' }}>Content ({blogs.wordCount} words)</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-2 h-2 rounded-full ${showPreview ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                                            <span style={{ color: mode === 'dark' ? 'white' : 'black' }}>Preview Mode</span>
+                                        </div>
+                                    </div>
+                                </CardBody>
+                            </Card>
+                            
                             {/* Category Selection */}
                             <Card className={mode === 'dark' ? 'bg-gray-800' : 'bg-white'}>
                                 <CardBody className="p-6">
@@ -673,7 +971,7 @@ console.log(greet('World'));</code></pre>
                                         className="mb-3 font-semibold flex items-center gap-2"
                                         style={{ color: mode === 'dark' ? 'white' : 'black' }}
                                     >
-                                        Category
+                                        📂 Category
                                     </Typography>
                                     <select
                                         className={`w-full rounded-lg p-3 border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 ${
@@ -711,7 +1009,7 @@ console.log(greet('World'));</code></pre>
                                         className="mb-3 font-semibold flex items-center gap-2"
                                         style={{ color: mode === 'dark' ? 'white' : 'black' }}
                                     >
-                                        Tags ({tags.length}/15)
+                                        🏷️ Tags ({tags.length}/15)
                                     </Typography>
                                     
                                     <div className="flex gap-2 mb-3">
@@ -763,6 +1061,59 @@ console.log(greet('World'));</code></pre>
                                 </CardBody>
                             </Card>
 
+                            {/* Publish Status */}
+                            <Card className={mode === 'dark' ? 'bg-gray-800' : 'bg-white'}>
+                                <CardBody className="p-6">
+                                    <Typography
+                                        variant="h6"
+                                        className="mb-3 font-semibold flex items-center gap-2"
+                                        style={{ color: mode === 'dark' ? 'white' : 'black' }}
+                                    >
+                                        📊 Publish Status
+                                    </Typography>
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between">
+                                            <span style={{ color: mode === 'dark' ? 'white' : 'black' }}>Title:</span>
+                                            <span className={blogs.title ? 'text-green-500' : 'text-red-500'}>
+                                                {blogs.title ? '✓ Complete' : '✗ Required'}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span style={{ color: mode === 'dark' ? 'white' : 'black' }}>Thumbnail:</span>
+                                            <span className={(image || imageUrl) ? 'text-green-500' : 'text-red-500'}>
+                                                {(image || imageUrl) ? '✓ Complete' : '✗ Required'}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span style={{ color: mode === 'dark' ? 'white' : 'black' }}>Category:</span>
+                                            <span className={blogs.category ? 'text-green-500' : 'text-red-500'}>
+                                                {blogs.category ? '✓ Complete' : '✗ Required'}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span style={{ color: mode === 'dark' ? 'white' : 'black' }}>Content:</span>
+                                            <span className={blogs.content && blogs.content !== '<p><br></p>' ? 'text-green-500' : 'text-red-500'}>
+                                                {blogs.content && blogs.content !== '<p><br></p>' ? '✓ Complete' : '✗ Required'}
+                                            </span>
+                                        </div>
+                                        <div className="pt-2 border-t border-gray-300">
+                                            <div className="flex justify-between font-semibold">
+                                                <span style={{ color: mode === 'dark' ? 'white' : 'black' }}>Overall:</span>
+                                                <span className={
+                                                    blogs.title && (image || imageUrl) && blogs.category && 
+                                                    blogs.content && blogs.content !== '<p><br></p>' 
+                                                        ? 'text-green-500' : 'text-yellow-500'
+                                                }>
+                                                    {blogs.title && (image || imageUrl) && blogs.category && 
+                                                     blogs.content && blogs.content !== '<p><br></p>' 
+                                                        ? '✓ Ready to Publish' : '⚠ Needs Completion'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CardBody>
+                            </Card>
+
                             {/* Clear Draft */}
                             <Card className={mode === 'dark' ? 'bg-gray-800' : 'bg-white'}>
                                 <CardBody className="p-6">
@@ -772,7 +1123,7 @@ console.log(greet('World'));</code></pre>
                                         onClick={clearDraft}
                                         className="w-full"
                                     >
-                                        Clear Draft
+                                        🗑️ Clear Draft
                                     </Button>
                                 </CardBody>
                             </Card>
