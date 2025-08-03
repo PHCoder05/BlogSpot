@@ -23,9 +23,9 @@ export const generateBlogSEOTags = (blog, currentUrl) => {
   const category = blog?.category || 'Technology';
   const title = blog?.title || 'Blog Post';
   
-  // Use a better default thumbnail for blog posts
+  // Use the blog thumbnail if available, otherwise use a better default
   const defaultThumbnail = 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80';
-  const thumbnail = blog?.thumbnail || defaultThumbnail;
+  const thumbnail = blog?.thumbnail || blog?.blogs?.thumbnail || defaultThumbnail;
 
   return {
     // Basic Meta Tags
@@ -87,7 +87,7 @@ export const generateBlogSEOTags = (blog, currentUrl) => {
         "name": "PHcoder05",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png"
+          "url": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
         }
       },
       "datePublished": blog?.date,
@@ -121,7 +121,7 @@ export const generateHomeSEOTags = (currentUrl) => {
     ogType: 'website',
     ogTitle: 'PHcoder05 - Technology Blog & Programming Tutorials',
     ogDescription: 'Explore insightful technology blogs, programming tutorials, DevOps guides, and development tips.',
-    ogImage: 'https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png',
+    ogImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     ogUrl: currentUrl,
     ogSiteName: 'PHcoder05',
     ogLocale: 'en_US',
@@ -130,7 +130,7 @@ export const generateHomeSEOTags = (currentUrl) => {
     twitterCard: 'summary_large_image',
     twitterTitle: 'PHcoder05 - Technology Blog & Programming Tutorials',
     twitterDescription: 'Explore insightful technology blogs, programming tutorials, DevOps guides, and development tips.',
-    twitterImage: 'https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png',
+    twitterImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     
     // Additional SEO
     themeColor: '#0ea5e9',
@@ -155,7 +155,7 @@ export const generateHomeSEOTags = (currentUrl) => {
         "name": "PHcoder05",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png"
+          "url": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
         }
       },
       "potentialAction": {
@@ -188,7 +188,7 @@ export const generateAllBlogsSEOTags = (currentUrl, totalBlogs = 0, selectedCate
     ogType: 'website',
     ogTitle: `All Articles${categoryText} - PHcoder05 Blog`,
     ogDescription: `Explore ${totalBlogs} articles on programming, cloud computing, DevOps, and technology.`,
-    ogImage: 'https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png',
+    ogImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     ogUrl: currentUrl,
     ogSiteName: 'PHcoder05',
     ogLocale: 'en_US',
@@ -197,7 +197,7 @@ export const generateAllBlogsSEOTags = (currentUrl, totalBlogs = 0, selectedCate
     twitterCard: 'summary_large_image',
     twitterTitle: `All Articles${categoryText} - PHcoder05 Blog`,
     twitterDescription: `Explore ${totalBlogs} articles on programming, cloud computing, DevOps, and technology.`,
-    twitterImage: 'https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png',
+    twitterImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     
     // Additional SEO
     themeColor: '#0ea5e9',
@@ -217,7 +217,7 @@ export const generateAllBlogsSEOTags = (currentUrl, totalBlogs = 0, selectedCate
         "name": "PHcoder05",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png"
+          "url": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
         }
       }
     }
@@ -242,7 +242,7 @@ export const generateAboutSEOTags = (currentUrl, totalBlogs = 0) => {
     ogType: 'profile',
     ogTitle: 'About PHcoder05 - Technology Blog & Developer Portfolio',
     ogDescription: 'Learn about PHcoder05, a technology blog focused on programming tutorials, cloud computing, DevOps, and software development.',
-    ogImage: 'https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png',
+    ogImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     ogUrl: currentUrl,
     ogSiteName: 'PHcoder05',
     ogLocale: 'en_US',
@@ -251,7 +251,7 @@ export const generateAboutSEOTags = (currentUrl, totalBlogs = 0) => {
     twitterCard: 'summary_large_image',
     twitterTitle: 'About PHcoder05 - Technology Blog & Developer Portfolio',
     twitterDescription: 'Learn about PHcoder05, a technology blog focused on programming tutorials, cloud computing, DevOps, and software development.',
-    twitterImage: 'https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png',
+    twitterImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     
     // Additional SEO
     themeColor: '#0ea5e9',
@@ -266,7 +266,7 @@ export const generateAboutSEOTags = (currentUrl, totalBlogs = 0) => {
       "jobTitle": "Software Developer & Technology Blogger",
       "url": "https://phcoder05.vercel.app/",
       "description": "Technology blogger and software developer focused on programming tutorials, cloud computing, and DevOps",
-      "image": "https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png",
+      "image": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80",
       "sameAs": [
         "https://github.com/phcoder05",
         "https://linkedin.com/in/pankaj-hadole",
@@ -298,7 +298,7 @@ export const generateLoginSEOTags = (currentUrl) => {
     ogType: 'website',
     ogTitle: 'Login - PHcoder05 Blog',
     ogDescription: 'Login to your PHcoder05 account to access personalized features.',
-    ogImage: 'https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png',
+    ogImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     ogUrl: currentUrl,
     ogSiteName: 'PHcoder05',
     ogLocale: 'en_US',
@@ -307,7 +307,7 @@ export const generateLoginSEOTags = (currentUrl) => {
     twitterCard: 'summary',
     twitterTitle: 'Login - PHcoder05 Blog',
     twitterDescription: 'Login to your PHcoder05 account to access personalized features.',
-    twitterImage: 'https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png',
+    twitterImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     
     // Additional SEO
     themeColor: '#0ea5e9',
@@ -346,7 +346,7 @@ export const generateSignupSEOTags = (currentUrl) => {
     ogType: 'website',
     ogTitle: 'Sign Up - PHcoder05 Blog',
     ogDescription: 'Create your PHcoder05 account to bookmark articles and engage with the community.',
-    ogImage: 'https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png',
+    ogImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     ogUrl: currentUrl,
     ogSiteName: 'PHcoder05',
     ogLocale: 'en_US',
@@ -355,7 +355,7 @@ export const generateSignupSEOTags = (currentUrl) => {
     twitterCard: 'summary',
     twitterTitle: 'Sign Up - PHcoder05 Blog',
     twitterDescription: 'Create your PHcoder05 account to bookmark articles and engage with the community.',
-    twitterImage: 'https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png',
+    twitterImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     
     // Additional SEO
     themeColor: '#0ea5e9',
@@ -411,7 +411,7 @@ export const generateAdminSEOTags = (currentUrl, pageType = 'dashboard') => {
     ogType: 'website',
     ogTitle: pageTitles[pageType] || 'Admin - PHcoder05 Blog',
     ogDescription: pageDescriptions[pageType] || 'Admin panel for PHcoder05 blog management.',
-    ogImage: 'https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png',
+    ogImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     ogUrl: currentUrl,
     ogSiteName: 'PHcoder05',
     ogLocale: 'en_US',
@@ -420,7 +420,7 @@ export const generateAdminSEOTags = (currentUrl, pageType = 'dashboard') => {
     twitterCard: 'summary',
     twitterTitle: pageTitles[pageType] || 'Admin - PHcoder05 Blog',
     twitterDescription: pageDescriptions[pageType] || 'Admin panel for PHcoder05 blog management.',
-    twitterImage: 'https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png',
+    twitterImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     
     // Additional SEO
     themeColor: '#0ea5e9',
@@ -650,7 +650,7 @@ export const generate404SEOTags = (currentUrl) => {
     ogType: 'website',
     ogTitle: '404 - Page Not Found | PHcoder05 Blog',
     ogDescription: 'The page you are looking for does not exist. Play our memory game while you\'re here.',
-    ogImage: 'https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png',
+    ogImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     ogUrl: currentUrl,
     ogSiteName: 'PHcoder05',
     ogLocale: 'en_US',
@@ -659,7 +659,7 @@ export const generate404SEOTags = (currentUrl) => {
     twitterCard: 'summary',
     twitterTitle: '404 - Page Not Found | PHcoder05 Blog',
     twitterDescription: 'The page you are looking for does not exist. Play our memory game while you\'re here.',
-    twitterImage: 'https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png',
+    twitterImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     
     // Additional SEO
     themeColor: '#0ea5e9',
@@ -699,7 +699,7 @@ export const generateUnsubscribeSEOTags = (currentUrl) => {
     ogType: 'website',
     ogTitle: 'Unsubscribe from Newsletter - PHcoder05 Blog',
     ogDescription: 'Unsubscribe from our newsletter. We\'re sorry to see you go, but you can always resubscribe later.',
-    ogImage: 'https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png',
+    ogImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     ogUrl: currentUrl,
     ogSiteName: 'PHcoder05',
     ogLocale: 'en_US',
@@ -708,7 +708,7 @@ export const generateUnsubscribeSEOTags = (currentUrl) => {
     twitterCard: 'summary',
     twitterTitle: 'Unsubscribe from Newsletter - PHcoder05 Blog',
     twitterDescription: 'Unsubscribe from our newsletter. We\'re sorry to see you go, but you can always resubscribe later.',
-    twitterImage: 'https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png',
+    twitterImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     
     // Additional SEO
     themeColor: '#0ea5e9',

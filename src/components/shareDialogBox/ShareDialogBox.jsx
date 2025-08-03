@@ -58,8 +58,9 @@ export default function ShareDialogBox({ title, url, description, image, hashtag
       }
     };
     
-    // Optimize image for social sharing
-    const optimizedImage = optimizeThumbnail(image || getFallbackImage());
+    // Optimize image for social sharing - handle both direct image and blog object structure
+    const imageToUse = image || (typeof image === 'object' && image?.thumbnail) || getFallbackImage();
+    const optimizedImage = optimizeThumbnail(imageToUse);
     const currentImage = optimizedImage.url;
     
     // Debug: Log optimized image

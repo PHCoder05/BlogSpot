@@ -511,7 +511,7 @@ function BlogInfo() {
                            title={getBlogs?.blogs?.title}
                            url={window.location.href}
                            description={getBlogs?.blogs?.content?.replace(/<[^>]*>/g, '').slice(0, 160)}
-                           image={getBlogs?.thumbnail}
+                           image={getBlogs?.blogs?.thumbnail || getBlogs?.thumbnail}
                            hashtags={getBlogs?.blogs?.tags || ['technology', 'programming', 'blog']}
                        />
                        {user?.role === 'admin' && <button onClick={() => setIsEditing(!isEditing)} className={`p-2 rounded-lg ${mode === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}><FaEdit className="text-blue-500"/></button>}
