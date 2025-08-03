@@ -21,7 +21,7 @@ export class SimpleSmtpService {
         secure: false, // true for 465, false for other ports
         auth: {
           user: import.meta.env.VITE_GMAIL_USER || 'phcoder.blog@gmail.com',
-          pass: import.meta.env.VITE_GMAIL_APP_PASSWORD || 'ortb meju xmif ritl'
+          pass: import.meta.env.VITE_GMAIL_APP_PASSWORD || 'zzfg virj xlas wvmf'
         }
       };
       
@@ -93,7 +93,7 @@ export class SimpleSmtpService {
       console.log('🔍 Testing Simple SMTP connection...');
       
       const user = import.meta.env.VITE_GMAIL_USER || 'phcoder.blog@gmail.com';
-      const password = import.meta.env.VITE_GMAIL_APP_PASSWORD || 'ortb meju xmif ritl';
+      const password = import.meta.env.VITE_GMAIL_APP_PASSWORD || 'zzfg virj xlas wvmf';
       
       if (!password) {
         return {
@@ -416,7 +416,7 @@ Create a .env file in your project root:
 
 \`\`\`env
 VITE_GMAIL_USER=phcoder.blog@gmail.com
-VITE_GMAIL_APP_PASSWORD=ortb meju xmif ritl
+VITE_GMAIL_APP_PASSWORD=zzfg virj xlas wvmf
 \`\`\`
 
 ## Step 4: Test Connection
