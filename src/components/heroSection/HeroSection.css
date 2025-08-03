@@ -1,55 +1,363 @@
-/* Bubbles Overlay */
+/* Professional Landing Page Styles */
+
+/* Bubbles Overlay - Enhanced */
 .bubbles-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none; /* Prevents bubbles from blocking interactions */
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 20%, transparent 20%) repeat;
-    background-size: 50px 50px;
-    z-index: 0;
-    animation: bubbles 15s infinite;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(20, 184, 166, 0.1) 2px, transparent 2px) repeat;
+  background-size: 80px 80px;
+  z-index: 0;
+  animation: bubbles 20s infinite linear;
+}
+
+/* Bubbles Animation - Smoother */
+@keyframes bubbles {
+  0% {
+    background-position: 0 0;
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    background-position: 80px 80px;
+    opacity: 0.3;
+  }
+}
+
+/* Floating Animation */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Pulse Animation for Status Badge */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(20, 184, 166, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(20, 184, 166, 0.8), 0 0 30px rgba(20, 184, 166, 0.4);
+  }
+}
+
+/* Typing Cursor Animation */
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
+/* Gradient Animation */
+@keyframes animate-gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: animate-gradient 3s ease infinite;
+}
+
+/* Skill Progress Bar Animation */
+@keyframes progressAnimation {
+  from {
+    width: 0%;
+  }
+  to {
+    width: var(--progress-width);
+  }
+}
+
+/* Card Hover Effects */
+.skill-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.skill-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Expertise Card Animations */
+.expertise-card {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.expertise-card:hover {
+  transform: translateY(-8px) rotateY(5deg);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Professional Image Styles */
+.professional-image {
+  transition: all 0.4s ease;
+  animation: float 6s ease-in-out infinite;
+}
+
+.professional-image:hover {
+  transform: scale(1.05);
+}
+
+/* Social Link Hover Effects */
+.social-link {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.social-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.social-link:hover::before {
+  left: 100%;
+}
+
+/* CTA Button Enhancements */
+.cta-button-primary {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(45deg, #14b8a6, #3b82f6);
+  box-shadow: 0 4px 15px 0 rgba(20, 184, 166, 0.3);
+}
+
+.cta-button-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.cta-button-primary:hover::before {
+  left: 100%;
+}
+
+/* Testimonial Card Styles */
+.testimonial-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.4s ease;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Achievement Stats Animation */
+.stat-number {
+  transition: all 0.5s ease;
+}
+
+.stat-card:hover .stat-number {
+  transform: scale(1.1);
+}
+
+/* Enhanced Card Hover Effects */
+.card-hover-effect {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-hover-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.6s;
+}
+
+.card-hover-effect:hover::before {
+  left: 100%;
+}
+
+.card-hover-effect:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Button Hover Effects */
+.button-hover-effect {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.button-hover-effect::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.button-hover-effect:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Loading Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Parallax Effect */
+.parallax {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus States for Accessibility */
+.focus-visible:focus {
+  outline: 2px solid #14b8a6;
+  outline-offset: 2px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .bubbles-overlay {
+    background-size: 40px 40px;
   }
   
-  /* Bubbles Animation */
-  @keyframes bubbles {
-    0% {
-      background-position: 0 0;
-    }
-    100% {
-      background-position: 50px 50px;
-    }
+  .professional-image {
+    animation: none;
   }
   
-  /* Custom Cursor */
-  .custom-cursor {
-    position: fixed;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background-color: #00bcd4;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-    transition: transform 0.2s ease, background-color 0.2s ease;
-    z-index: 1000;
+  .expertise-card:hover {
+    transform: translateY(-4px);
   }
   
-  .custom-cursor:hover {
-    background-color: #00796b;
+  .card-hover-effect:hover {
+    transform: translateY(-4px) scale(1.01);
   }
-  
-  /* Add a bubble effect on hover */
-  .custom-cursor.bubble-effect {
-    width: 20px;
-    height: 20px;
-    background-color: rgba(0, 188, 212, 0.5);
-    transform: translate(-50%, -50%) scale(1.2);
+}
+
+/* Dark Mode Specific Styles */
+.dark .skill-card {
+  background: rgba(31, 41, 55, 0.5);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+.dark .testimonial-card {
+  background: rgba(31, 41, 55, 0.6);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+/* Loading States */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
   }
-  
-  /* Ensure images don't overflow their container */
-  img {
-    max-width: 100%;
-    height: auto;
+  100% {
+    background-position: -200% 0;
   }
+}
+
+/* Performance Optimizations */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #14b8a6;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0d9488;
+}
+
+/* Selection Styles */
+::selection {
+  background: rgba(20, 184, 166, 0.3);
+  color: inherit;
+}
+
+/* Print Styles */
+@media print {
+  .bubbles-overlay,
+  .animate-pulse,
+  .animate-gradient {
+    display: none;
+  }
+}
   

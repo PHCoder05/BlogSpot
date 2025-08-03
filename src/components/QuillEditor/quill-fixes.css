@@ -1,0 +1,76 @@
+/* Fix for Quill editor flickering/disappearing issues */
+.patched-quill-container {
+  min-height: 300px;
+  position: relative;
+}
+
+.patched-quill-container .quill {
+  height: 100%;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.patched-quill-container .ql-container {
+  flex: 1;
+  overflow: auto;
+  min-height: 200px;
+}
+
+.patched-quill-container .ql-editor {
+  min-height: 200px;
+}
+
+/* Fix for toolbar flickering */
+.patched-quill-container .ql-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: inherit;
+}
+
+/* Prevent editor from disappearing when empty */
+.patched-quill-container .ql-blank::before {
+  font-style: italic;
+  color: #ccc;
+  pointer-events: none;
+}
+
+/* Fix for editor focus issues */
+.patched-quill-container .ql-editor:focus {
+  outline: none;
+}
+
+/* Fix for editor in dark mode */
+.dark-mode .patched-quill-container .ql-toolbar,
+.dark-mode .patched-quill-container .ql-container {
+  border-color: #4a5568;
+}
+
+.dark-mode .patched-quill-container .ql-editor {
+  color: #e2e8f0;
+}
+
+.dark-mode .patched-quill-container .ql-snow .ql-stroke {
+  stroke: #e2e8f0;
+}
+
+.dark-mode .patched-quill-container .ql-snow .ql-fill {
+  fill: #e2e8f0;
+}
+
+/* Fix for editor loading state */
+.editor-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  background-color: #f9fafb;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+}
+
+.dark-mode .editor-loading {
+  background-color: #2d3748;
+  border-color: #4a5568;
+}

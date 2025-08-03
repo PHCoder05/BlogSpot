@@ -1,0 +1,29 @@
+{
+  "name": "PHcoder05 - Technology Blog & Programming Tutorials",
+  "short_name": "PHcoder05",
+  "description": "Technology blog and programming tutorials by Pankaj Hadole",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0ea5e9",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "technology", "productivity"],
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false
+} 

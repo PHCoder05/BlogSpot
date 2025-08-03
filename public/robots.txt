@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://phcoder05.vercel.app/sitemap.xml
+
+# Disallow admin area
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /createblog/
+Disallow: /editblog/
+
+# Allow important pages
+Allow: /
+Allow: /blog
+Allow: /allblogs
+Allow: /about
+Allow: /bloginfo/
+
+# Crawl delay (optional)
+Crawl-delay: 1 

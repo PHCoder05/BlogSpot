@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import MyContext from './myContext';
 import { collection, deleteDoc, doc, onSnapshot, orderBy, query, getDoc, updateDoc } from 'firebase/firestore';
-import { fireDb } from '../../firebase/FirebaseConfig';
+import { fireDb, auth } from '../../firebase/FirebaseConfig';
+import { onAuthStateChanged } from 'firebase/auth';
 import toast from 'react-hot-toast';
 
 function MyState(props) {
@@ -9,6 +10,7 @@ function MyState(props) {
     const [searchkey, setSearchkey] = useState('');
     const [loading, setloading] = useState(false);
     const [getAllBlog, setGetAllBlog] = useState([]);
+    const [user, setUser] = useState(null);
 
     const toggleMode = () => {
         if (mode === 'light') {
@@ -27,41 +29,76 @@ function MyState(props) {
                 collection(fireDb, "blogPost"),
                 orderBy('time')
             );
-            const data = onSnapshot(q, (QuerySnapshot) => {
-                let blogArray = [];
-                QuerySnapshot.forEach((doc) => {
-                    blogArray.push({ ...doc.data(), id: doc.id });
-                });
-                setGetAllBlog(blogArray);
+            
+            const unsubscribe = onSnapshot(q, (QuerySnapshot) => {
+                try {
+                    let blogArray = [];
+                    QuerySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        // Validate data before adding to array
+                        if (data && typeof data === 'object') {
+                            blogArray.push({ ...data, id: doc.id });
+                        }
+                    });
+                    setGetAllBlog(blogArray);
+                } catch (error) {
+                    console.error('Error processing blog data:', error);
+                    toast.error('Error loading blogs');
+                } finally {
+                    setloading(false);
+                }
+            }, (error) => {
+                console.error('Firebase snapshot error:', error);
+                toast.error('Error connecting to database');
                 setloading(false);
             });
-            return () => data();
+
+            // Return cleanup function
+            return unsubscribe;
         } catch (error) {
-            console.log(error);
+            console.error('Error setting up blog listener:', error);
+            toast.error('Error initializing blog system');
             setloading(false);
         }
     };
 
     useEffect(() => {
-        getAllBlogs();
+        const unsubscribe = getAllBlogs();
+        return () => {
+            if (unsubscribe) {
+                unsubscribe();
+            }
+        };
+    }, []);
+
+    // Listen for authentication state changes
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setUser(user);
+        });
+        return () => unsubscribe();
     }, []);
 
     const deleteBlogs = async (id) => {
         try {
             await deleteDoc(doc(fireDb, "blogPost", id));
-            getAllBlogs();
             toast.success("Blog deleted successfully");
         } catch (error) {
-            console.log(error);
+            console.error('Error deleting blog:', error);
+            toast.error("Error deleting blog");
         }
     };
 
     const getBlogById = async (id) => {
         try {
             const blogDoc = await getDoc(doc(fireDb, "blogPost", id));
-            return { ...blogDoc.data(), id: blogDoc.id };
+            if (blogDoc.exists()) {
+                return { ...blogDoc.data(), id: blogDoc.id };
+            }
+            return null;
         } catch (error) {
-            console.log(error);
+            console.error('Error fetching blog by ID:', error);
+            toast.error("Error fetching blog");
             return null;
         }
     };
@@ -69,10 +106,10 @@ function MyState(props) {
     const updateBlog = async (id, updatedBlog) => {
         try {
             await updateDoc(doc(fireDb, "blogPost", id), updatedBlog);
-            getAllBlogs();
             toast.success("Blog updated successfully");
         } catch (error) {
-            console.log(error);
+            console.error('Error updating blog:', error);
+            toast.error("Error updating blog");
         }
     };
 
@@ -87,7 +124,8 @@ function MyState(props) {
             getAllBlog,
             deleteBlogs,
             getBlogById,
-            updateBlog
+            updateBlog,
+            user
         }}>
             {props.children}
         </MyContext.Provider>

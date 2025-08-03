@@ -16,24 +16,36 @@ import { Toaster } from "react-hot-toast";
 import CreateBlog from "./pages/admin/createBlog/CreateBlog";
 import EditBlog from "./pages/admin/editBlog/Editblog";
 import AboutPage from './components/aboutPage/AboutPage';
+import ScrollToTop from './components/scrollToTop/ScrollToTop';
+import ProgressBar from './components/progressBar/ProgressBar';
+import Login from "./pages/auth/Login";
+import Signup from "./pages/auth/Signup";
 
-import React from "react";
+import React, { useEffect } from "react";
+import { suppressQuillWarnings } from "./utils/quillWarningSuppression";
 
 const ProtectedRouteForAdmin = ({ children }) => {
   const admin = JSON.parse(localStorage.getItem('admin'));
-  const authorizedEmails = JSON.parse(localStorage.getItem('authorizedEmails')) || ['pankajhadole4@gmail.com'];
-
-  if (!admin || !authorizedEmails.includes(admin.user.email)) {
-    return <Navigate to="/admin" />;
+  
+  // Check if admin exists and has the correct email
+  if (admin && admin.email === "pankajhadole4@gmail.com") {
+    return children;
   }
-
-  return children;
+  
+  return <Navigate to="/admin" />;
 };
 
 function App() {
+  // Suppress React Quill warnings globally
+  useEffect(() => {
+    const restore = suppressQuillWarnings();
+    return restore;
+  }, []);
+
   return (
     <MyState>
-      <Router>
+      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <ProgressBar />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/blog" element={<Blog />} />
@@ -41,15 +53,17 @@ function App() {
           <Route path="/bloginfo/:id" element={<BlogInfo />} />
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
 
           <Route
-    path="/dashboard"
-    element={
-        <ProtectedRouteForAdmin>
-            <Dashboard />
-        </ProtectedRouteForAdmin>
-    }
-/>
+            path="/dashboard"
+            element={
+                <ProtectedRouteForAdmin>
+                    <Dashboard />
+                </ProtectedRouteForAdmin>
+            }
+          />
 
           <Route
             path="/createblog"
@@ -69,6 +83,7 @@ function App() {
           />
           <Route path="/*" element={<NoPage />} />
         </Routes>
+        <ScrollToTop />
         <Toaster />
       </Router>
     </MyState>

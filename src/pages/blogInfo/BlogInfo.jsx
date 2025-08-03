@@ -1,30 +1,37 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { Helmet } from 'react-helmet';
 import myContext from '../../context/data/myContext';
 import { useParams, useNavigate } from 'react-router';
-import { Timestamp, addDoc, collection, doc, getDoc, onSnapshot, orderBy, query, getDocs, updateDoc } from 'firebase/firestore';
+import { Link } from 'react-router-dom';
+import { Timestamp, addDoc, collection, doc, getDoc, onSnapshot, orderBy, query, getDocs, updateDoc, increment, arrayUnion, arrayRemove, setDoc } from 'firebase/firestore';
 import { fireDb } from '../../firebase/FirebaseConfig';
 import Loader from '../../components/loader/Loader';
 import Layout from '../../components/layout/Layout';
 import Comment from '../../components/comment/Comment';
 import toast from 'react-hot-toast';
 import { FacebookShareButton, TwitterShareButton, LinkedinShareButton, WhatsappShareButton, FacebookIcon, TwitterIcon, LinkedinIcon, WhatsappIcon } from 'react-share';
-import { FaCopy, FaCode, FaEdit } from 'react-icons/fa';
+import { 
+  FaCopy, FaCode, FaEdit, FaEye, FaClock, FaUser, FaCalendar, FaTags, 
+  FaHeart, FaBookmark, FaShare, FaPrint, FaArrowUp, FaComment, 
+  FaThumbsUp, FaThumbsDown, FaBookOpen, FaStar, FaDownload, FaLink,
+  FaEllipsisH, FaTimes, FaCheck, FaPencilAlt, FaTrash, FaReply, FaListUl, FaExpand, FaCompress, FaTextHeight
+} from 'react-icons/fa';
 
 const Ad = ({ position }) => (
-  <div className="ad-container">
-    <p>Advertisement Space - {position}</p>
+  <div className="ad-container my-8 text-center">
+    <p className="text-gray-400 dark:text-gray-600">[Advertisement Space - {position}]</p>
   </div>
 );
 
 function BlogInfo() {
   const context = useContext(myContext);
-  const { mode, loading, setloading, user } = context; // Assuming `user` holds the current user data
+  const { mode, loading, setloading, user } = context;
 
   const params = useParams();
   const navigate = useNavigate();
 
-  const [getBlogs, setGetBlogs] = useState();
+  const [getBlogs, setGetBlogs] = useState(null);
+  const [processedContent, setProcessedContent] = useState('');
   const [otherBlogs, setOtherBlogs] = useState([]);
   const [fullName, setFullName] = useState('');
   const [commentText, setCommentText] = useState('');
@@ -32,163 +39,347 @@ function BlogInfo() {
   const [isEditing, setIsEditing] = useState(false);
   const [updatedTitle, setUpdatedTitle] = useState('');
   const [updatedContent, setUpdatedContent] = useState('');
+  const [isLiked, setIsLiked] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
+  const [readingProgress, setReadingProgress] = useState(0);
+  const [showTableOfContents, setShowTableOfContents] = useState(false);
+  const [activeSection, setActiveSection] = useState('');
+  const [showFullScreen, setShowFullScreen] = useState(false);
+  const [fontSize, setFontSize] = useState('medium');
+  const [showReadingMode, setShowReadingMode] = useState(false);
+  const [showComments, setShowComments] = useState(true);
+  const [showRelatedPosts, setShowRelatedPosts] = useState(true);
+  const [toc, setToc] = useState([]);
 
-  const getAllBlogs = async () => {
+  // Handle full screen toggle
+  const toggleFullScreen = () => {
+    setShowFullScreen(!showFullScreen);
+  };
+
+  // Handle ESC key to exit full screen
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape' && showFullScreen) {
+        setShowFullScreen(false);
+      }
+    };
+
+    if (showFullScreen) {
+      document.addEventListener('keydown', handleEscKey);
+      // Prevent body scroll when in full screen
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showFullScreen]);
+
+  const processContentForToc = useCallback((htmlContent) => {
+    if (!htmlContent) {
+        setToc([]);
+        return '';
+    }
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlContent, 'text/html');
+    const headings = doc.querySelectorAll('h1, h2, h3');
+    const newToc = [];
+
+    headings.forEach((heading, index) => {
+        const text = heading.textContent;
+        const level = parseInt(heading.tagName.substring(1), 10);
+        const id = text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '') + `-${index}`;
+        
+        heading.setAttribute('id', id);
+        
+        newToc.push({ id, text, level, node: heading });
+    });
+
+    setToc(newToc);
+    return doc.body.innerHTML;
+  }, []);
+
+  const getAllBlogs = useCallback(async () => {
     setloading(true);
     try {
       const productTemp = await getDoc(doc(fireDb, "blogPost", params.id));
       if (productTemp.exists()) {
-        setGetBlogs(productTemp.data());
-        setUpdatedTitle(productTemp.data().blogs.title);
-        setUpdatedContent(productTemp.data().blogs.content);
+        const blogData = productTemp.data();
+        setGetBlogs(blogData);
+        setUpdatedTitle(blogData.blogs.title);
+        setUpdatedContent(blogData.blogs.content);
+        const contentWithIds = processContentForToc(blogData.blogs.content);
+        setProcessedContent(contentWithIds);
+        
+        await updateDoc(doc(fireDb, "blogPost", params.id), {
+          'blogs.views': increment(1)
+        });
       } else {
-        console.log("Document does not exist");
+        toast.error("Blog post not found!");
+        navigate('/');
       }
-      setloading(false);
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      toast.error("Error loading blog post");
+    } finally {
       setloading(false);
     }
-  };
+  }, [params.id, navigate, setloading, processContentForToc]);
 
   useEffect(() => {
     getAllBlogs();
-  }, [params.id]);
+  }, [getAllBlogs]);
+  
+  // Effect for checking like status
+  useEffect(() => {
+      if (user && getBlogs?.blogs?.likedBy) {
+          setIsLiked(getBlogs.blogs.likedBy.includes(user.uid));
+      } else {
+          setIsLiked(false);
+      }
+  }, [user, getBlogs]);
 
-  const getOtherBlogs = async () => {
-    try {
-      const q = query(
-        collection(fireDb, "blogPost"),
-        orderBy('date', 'desc')
-      );
-      const querySnapshot = await getDocs(q);
-      let blogsArray = [];
-      querySnapshot.forEach((doc) => {
-        if (doc.id !== params.id) {
-          blogsArray.push({ ...doc.data(), id: doc.id });
-        }
+  // Effect for checking bookmark status
+  useEffect(() => {
+      if (!user) {
+          setIsBookmarked(false);
+          return;
+      }
+      const userRef = doc(fireDb, "users", user.uid);
+      const unsub = onSnapshot(userRef, (doc) => {
+          if (doc.exists()) {
+              const bookmarks = doc.data().bookmarks || [];
+              setIsBookmarked(bookmarks.includes(params.id));
+          } else {
+              // If user document doesn't exist, user is not bookmarked
+              setIsBookmarked(false);
+          }
       });
-      setOtherBlogs(blogsArray);
+      return () => unsub(); // Cleanup listener
+  }, [user, params.id]);
+
+  const getOtherBlogs = useCallback(async () => {
+    if (!getBlogs) return;
+    try {
+      const q = query(collection(fireDb, "blogPost"), orderBy('date', 'desc'), );
+      const querySnapshot = await getDocs(q);
+      const blogsArray = querySnapshot.docs
+        .map(doc => ({ ...doc.data(), id: doc.id }))
+        .filter(doc => doc.id !== params.id);
+
+      const currentCategory = getBlogs.blogs.category;
+      const currentTags = getBlogs.blogs.tags || [];
+
+      const scoredBlogs = blogsArray.map(blog => {
+          let score = 0;
+          if (blog.blogs?.category === currentCategory) score += 5;
+          const matchingTags = blog.blogs?.tags?.filter(tag => currentTags.includes(tag)).length || 0;
+          score += matchingTags * 2;
+          return { ...blog, score };
+      });
+      
+      const relevantBlogs = scoredBlogs.sort((a, b) => b.score - a.score).slice(0, 4);
+      setOtherBlogs(relevantBlogs);
+
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
-  };
+  }, [getBlogs, params.id]);
 
   useEffect(() => {
     getOtherBlogs();
-  }, [params.id]);
+  }, [getOtherBlogs]);
 
   const addComment = async () => {
-    const commentRef = collection(fireDb, "blogPost/" + `${params.id}/` + "comment");
+    if (!commentText.trim() || !fullName.trim()) {
+        return toast.error("Name and comment cannot be empty.");
+    }
+    const commentRef = collection(fireDb, `blogPost/${params.id}/comment`);
     try {
-      await addDoc(
-        commentRef, {
+      await addDoc(commentRef, {
           fullName,
           commentText,
           time: Timestamp.now(),
-          date: new Date().toLocaleString(
-            "en-US",
-            {
-              month: "short",
-              day: "2-digit",
-              year: "numeric",
-            }
-          )
-        }
-      );
+          date: new Date().toLocaleString("en-US", { month: "short", day: "2-digit", year: "numeric" })
+      });
       toast.success('Comment Added Successfully');
       setFullName("");
       setCommentText("");
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      toast.error("Failed to add comment.");
     }
   };
 
-  const getcomment = async () => {
+  const getcomment = useCallback(() => {
     try {
-      const q = query(
-        collection(fireDb, "blogPost/" + `${params.id}/` + "comment/"),
-        orderBy('time')
-      );
-      const data = onSnapshot(q, (QuerySnapshot) => {
-        let productsArray = [];
-        QuerySnapshot.forEach((doc) => {
-          productsArray.push({ ...doc.data(), id: doc.id });
-        });
-        setAllComment(productsArray);
+      const q = query(collection(fireDb, `blogPost/${params.id}/comment`), orderBy('time', 'desc'));
+      const unsubscribe = onSnapshot(q, (QuerySnapshot) => {
+        const commentsArray = QuerySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+        setAllComment(commentsArray);
       });
-      return () => data();
+      return unsubscribe;
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
-  };
+  }, [params.id]);
 
   useEffect(() => {
-    getcomment();
+    const unsubscribe = getcomment();
     window.scrollTo(0, 0);
-  }, [params.id]);
+    return () => unsubscribe && unsubscribe();
+  }, [getcomment]);
+  
+  useEffect(() => {
+    const handleScroll = () => {
+      const element = document.documentElement;
+      const scrollTotal = element.scrollHeight - element.clientHeight;
+      if (scrollTotal > 0) {
+        setReadingProgress((element.scrollTop / scrollTotal) * 100);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const shareUrl = window.location.href;
   const shareTitle = getBlogs?.blogs?.title;
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      toast.success('Link copied to clipboard!');
-    }).catch((error) => {
-      console.log('Error copying to clipboard', error);
-    });
-  };
-
-  const embedCode = `<iframe src="${shareUrl}" width="600" height="400" frameborder="0" allowfullscreen></iframe>`;
-
-  const copyEmbedCode = () => {
-    navigator.clipboard.writeText(embedCode).then(() => {
-      toast.success('Embed code copied to clipboard!');
-    }).catch((error) => {
-      console.log('Error copying embed code', error);
-    });
+  const copyToClipboard = (textToCopy, message) => {
+    navigator.clipboard.writeText(textToCopy)
+      .then(() => toast.success(message))
+      .catch((err) => toast.error('Failed to copy.'));
   };
 
   const updateBlog = async () => {
     const blogRef = doc(fireDb, "blogPost", params.id);
     try {
       await updateDoc(blogRef, {
-        blogs: {
-          title: updatedTitle,
-          content: updatedContent
-        },
-        date: new Date().toLocaleString("en-US", {
-          month: "short",
-          day: "2-digit",
-          year: "numeric",
-        })
+        'blogs.title': updatedTitle,
+        'blogs.content': updatedContent,
+        date: new Date().toLocaleString("en-US", { month: "short", day: "2-digit", year: "numeric" })
       });
       toast.success('Blog updated successfully');
       setIsEditing(false);
+      getAllBlogs();
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast.error('Error updating blog');
     }
   };
 
-  const createMarkup = (content) => {
-    return { __html: content };
+  const handleLike = async () => {
+    if (!user) {
+        toast.error('Please login to like posts');
+        navigate('/login');
+        return;
+    }
+    const blogRef = doc(fireDb, "blogPost", params.id);
+    try {
+        const change = isLiked ? arrayRemove(user.uid) : arrayUnion(user.uid);
+        await updateDoc(blogRef, { 'blogs.likedBy': change });
+        // Optimistic update of UI
+        const newLikedBy = isLiked 
+          ? getBlogs.blogs.likedBy.filter(uid => uid !== user.uid)
+          : [...(getBlogs.blogs.likedBy || []), user.uid];
+        setGetBlogs({ ...getBlogs, blogs: { ...getBlogs.blogs, likedBy: newLikedBy } });
+        toast.success(isLiked ? 'Post unliked' : 'Post liked!');
+    } catch (error) {
+        console.error("Error updating like:", error);
+        toast.error('Error updating like');
+    }
   };
+
+  const handleBookmark = async () => {
+    if (!user) {
+        toast.error('Please login to bookmark posts');
+        navigate('/login');
+        return;
+    }
+    const userRef = doc(fireDb, "users", user.uid);
+    try {
+        const change = isBookmarked ? arrayRemove(params.id) : arrayUnion(params.id);
+        
+        // Check if user document exists, if not create it
+        const userDoc = await getDoc(userRef);
+        if (!userDoc.exists()) {
+            // Create user document if it doesn't exist
+            await setDoc(userRef, {
+                name: user.displayName || user.email,
+                uid: user.uid,
+                email: user.email,
+                time: Timestamp.now(),
+                role: 'user',
+                bookmarks: isBookmarked ? [] : [params.id]
+            });
+        } else {
+            // Update existing document
+            await updateDoc(userRef, { bookmarks: change });
+        }
+        
+        setIsBookmarked(!isBookmarked); // Optimistic update
+        toast.success(isBookmarked ? 'Removed from bookmarks' : 'Added to bookmarks!');
+    } catch (error) {
+        console.error("Error updating bookmarks:", error);
+        toast.error("Error updating bookmarks");
+    }
+  };
+  
+  const handlePrint = () => window.print();
+
+  const handleDownload = () => {
+    const content = `Title: ${getBlogs?.blogs?.title}\nAuthor: Pankaj Hadole\nDate: ${getBlogs?.date}\n\n${getBlogs?.blogs?.content.replace(/<[^>]*>?/gm, '')}`;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${getBlogs?.blogs?.title?.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    toast.success('Article downloaded successfully!');
+  };
+
+  const createMarkup = (content) => ({ __html: content });
+
+  const formatReadingTime = (content = '') => Math.ceil(content.split(' ').length / 200);
+
+  const getFontSizeClass = () => ({
+    small: 'text-sm', medium: 'text-base', large: 'text-lg', xl: 'text-xl'
+  })[fontSize] || 'text-base';
+
+  const getReadingModeClass = () => showReadingMode ? 'max-w-3xl mx-auto bg-white dark:bg-gray-900 shadow-2xl rounded-xl p-4 sm:p-8' : '';
+
+  const handleTocClick = (e, id) => {
+    e.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setActiveSection(id);
+  };
+  
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex justify-center items-center h-screen">
+          <Loader />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
       <Helmet>
-        <title>{getBlogs ? getBlogs.blogs.title : 'Loading...'}</title>
+        <title>{getBlogs ? getBlogs.blogs.title : 'Blog'}</title>
         <meta name="description" content={getBlogs?.blogs?.content.slice(0, 150)} />
-        <meta name="keywords" content="blog, article, news, content, Technology, Farmer, Programming, Sports, News, Trending" />
         <meta property="og:title" content={getBlogs?.blogs?.title} />
         <meta property="og:description" content={getBlogs?.blogs?.content.slice(0, 150)} />
         <meta property="og:image" content={getBlogs?.thumbnail} />
-        <meta property="og:url" content={shareUrl} />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={getBlogs?.blogs?.title} />
-        <meta name="twitter:description" content={getBlogs?.blogs?.content.slice(0, 150)} />
-        <meta name="twitter:image" content={getBlogs?.thumbnail} />
         <script type="application/ld+json">
           {`
             {
@@ -196,154 +387,204 @@ function BlogInfo() {
               "@type": "BlogPosting",
               "headline": "${getBlogs?.blogs?.title}",
               "image": "${getBlogs?.thumbnail}",
-              "author": {
-                "@type": "Person",
-                "name": "Pankaj Hadole"
-              },
+              "author": { "@type": "Person", "name": "Pankaj Hadole" },
               "datePublished": "${getBlogs?.date}",
-              "articleBody": "${getBlogs?.blogs?.content}"
+              "articleBody": "${getBlogs?.blogs?.content.replace(/"/g, '\\"')}"
             }
           `}
         </script>
       </Helmet>
-      <section className="rounded-lg h-full overflow-hidden max-w-4xl mx-auto px-4">
-        <div className="py-4 lg:py-8">
-          {loading
-            ? <Loader />
-            : <div>
-              <Ad position="Top Banner" />
-              <img alt="content" className="mb-3 rounded-lg h-full w-full" src={getBlogs?.thumbnail} />
-              <div className="flex justify-between items-center mb-3">
-                <h1 style={{ color: mode === 'dark' ? 'white' : 'black' }} className='text-xl md:text-2xl lg:text-2xl font-semibold'>
-                  {isEditing
-                    ? <input
-                        type="text"
-                        value={updatedTitle}
-                        onChange={(e) => setUpdatedTitle(e.target.value)}
-                        className="border p-2 rounded"
-                      />
-                    : getBlogs?.blogs?.title}
-                </h1>
-                <p style={{ color: mode === 'dark' ? 'white' : 'black' }}>{getBlogs?.date}</p>
-                {user?.role === 'admin' && (
-                  <button
-                    onClick={() => setIsEditing(!isEditing)}
-                    className="ml-4 p-2 rounded-full border border-gray-300 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    aria-label="Edit Blog"
-                  >
-                    <FaEdit size={20} />
-                  </button>
-                )}
+
+      <div className="fixed top-0 left-0 w-full h-1.5 bg-gray-200 dark:bg-gray-700 z-50">
+        <div 
+          className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 transition-all duration-300"
+          style={{ width: `${readingProgress}%` }}
+        />
+      </div>
+
+      <div className="fixed bottom-20 sm:bottom-24 md:bottom-28 right-4 sm:right-5 z-50">
+        <button onClick={toggleFullScreen} className={`p-3 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 ${mode === 'dark' ? 'bg-gray-800 text-white hover:bg-gray-700' : 'bg-white text-gray-700 hover:bg-gray-100'}`}>
+          {showFullScreen ? <FaCompress /> : <FaExpand />}
+        </button>
+      </div>
+
+      {/* Full Screen Exit Button */}
+      {showFullScreen && (
+        <div className="fixed top-4 right-4 z-50">
+          <button 
+            onClick={() => setShowFullScreen(false)}
+            className={`p-4 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 ${mode === 'dark' ? 'bg-gray-800 text-white hover:bg-gray-700' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+            title="Exit Full Screen (ESC)"
+          >
+            <FaTimes className="text-xl" />
+          </button>
+        </div>
+      )}
+
+      <div className={`${showFullScreen ? 'fixed inset-0 z-50 bg-white dark:bg-gray-900 overflow-y-auto' : ''}`}>
+        {showFullScreen && (
+          <div className="fixed top-4 left-4 z-50">
+            <div className={`px-4 py-2 rounded-lg shadow-lg ${mode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-700'}`}>
+              <p className="text-sm font-medium">Full Screen Mode</p>
+              <p className="text-xs opacity-75">Press ESC or click X to exit</p>
+            </div>
+          </div>
+        )}
+        <section className={`container mx-auto px-4 ${showFullScreen ? 'py-8' : 'py-4 lg:py-8'}`}>
+          <div className={getReadingModeClass()}>
+                <div className="relative mb-8">
+                    <div className="relative h-72 md:h-[450px] rounded-2xl overflow-hidden shadow-2xl group">
+                        <img alt="Blog thumbnail" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" src={getBlogs?.thumbnail} />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+                        <div className="absolute top-4 left-4">
+                            <span className="px-4 py-2 rounded-full text-sm font-bold bg-white/20 text-white backdrop-blur-sm border border-white/30">{getBlogs?.blogs?.category || 'General'}</span>
+                        </div>
+                        <div className="absolute top-4 right-4 flex gap-2">
+                            <button onClick={handleLike} className={`p-3 rounded-full shadow-lg transition-all duration-300 ${isLiked ? 'bg-red-500 text-white' : 'bg-white/90 text-red-500 hover:bg-white'}`}>
+                                <FaHeart />
+                            </button>
+                            <button onClick={handleBookmark} className={`p-3 rounded-full shadow-lg transition-all duration-300 ${isBookmarked ? 'bg-blue-500 text-white' : 'bg-white/90 text-blue-500 hover:bg-white'}`}>
+                                <FaBookmark />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mb-8">
+                    <h1 className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4 leading-tight ${mode === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                        {isEditing ? <input type="text" value={updatedTitle} onChange={(e) => setUpdatedTitle(e.target.value)} className="w-full p-2 border-2 border-blue-500 rounded-lg" /> : getBlogs?.blogs?.title}
+                    </h1>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 text-sm">
+                        <div className="flex items-center gap-2"><FaUser className="text-blue-500"/> <span className={mode === 'dark' ? 'text-gray-300' : 'text-gray-600'}>Pankaj Hadole</span></div>
+                        <div className="flex items-center gap-2"><FaCalendar className="text-green-500"/> <span className={mode === 'dark' ? 'text-gray-300' : 'text-gray-600'}>{getBlogs?.date}</span></div>
+                        <div className="flex items-center gap-2"><FaClock className="text-purple-500"/> <span className={mode === 'dark' ? 'text-gray-300' : 'text-gray-600'}>{formatReadingTime(getBlogs?.blogs?.content)} min read</span></div>
+                        <div className="flex items-center gap-2"><FaEye className="text-orange-500"/> <span className={mode === 'dark' ? 'text-gray-300' : 'text-gray-600'}>{getBlogs?.blogs?.views || 0} Views</span></div>
+                    </div>
+                    {getBlogs?.blogs?.tags?.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-6">
+                            {getBlogs.blogs.tags.map((tag, index) => (
+                                <span key={index} className={`px-3 py-1 rounded-full text-xs font-medium ${mode === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>#{tag}</span>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Controls */}
+                <div className={`sticky top-1.5 z-30 flex flex-wrap items-center justify-between gap-4 p-3 mb-8 rounded-xl shadow-md transition-all ${mode === 'dark' ? 'bg-gray-800/80 border border-gray-700' : 'bg-white/80 border'} backdrop-blur-sm`}>
+                    <div className="flex items-center gap-2 sm:gap-4">
+                        <button onClick={() => setShowTableOfContents(!showTableOfContents)} className={`p-2 rounded-lg ${mode === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}><FaListUl/></button>
+                        <button onClick={() => setShowReadingMode(!showReadingMode)} className={`p-2 rounded-lg ${showReadingMode ? 'text-blue-500' : ''} ${mode === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}><FaBookOpen/></button>
+                        <div className="flex items-center gap-1 p-1 rounded-lg bg-gray-200 dark:bg-gray-700">
+                           {['small', 'medium', 'large', 'xl'].map(size => (
+                               <button key={size} onClick={() => setFontSize(size)} className={`px-2 py-1 text-sm rounded ${fontSize === size ? 'bg-blue-500 text-white' : 'text-gray-600 dark:text-gray-300'}`}><FaTextHeight/></button>
+                           ))}
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 sm:gap-4">
+                       <button onClick={handleLike} className={`flex items-center gap-2 p-2 rounded-lg ${mode === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}>
+                           <FaHeart className={isLiked ? 'text-red-500' : 'text-gray-500'}/> <span className="text-sm font-semibold">{getBlogs?.blogs?.likedBy?.length || 0}</span>
+                       </button>
+                       <div className="relative">
+                           <button onClick={() => setShowShareMenu(!showShareMenu)} className={`p-2 rounded-lg ${mode === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}><FaShare/></button>
+                           {showShareMenu && (
+                             <div className={`absolute top-full right-0 mt-2 p-2 rounded-xl shadow-xl z-10 flex gap-2 ${mode === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border'}`}>
+                               <FacebookShareButton url={shareUrl} quote={shareTitle}><FacebookIcon size={32} round /></FacebookShareButton>
+                               <TwitterShareButton url={shareUrl} title={shareTitle}><TwitterIcon size={32} round /></TwitterShareButton>
+                               <LinkedinShareButton url={shareUrl} title={shareTitle}><LinkedinIcon size={32} round /></LinkedinShareButton>
+                               <WhatsappShareButton url={shareUrl} title={shareTitle}><WhatsappIcon size={32} round /></WhatsappShareButton>
+                             </div>
+                           )}
+                       </div>
+                       {user?.role === 'admin' && <button onClick={() => setIsEditing(!isEditing)} className={`p-2 rounded-lg ${mode === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}><FaEdit className="text-blue-500"/></button>}
+                    </div>
+                </div>
+
+                <div className="flex flex-col lg:flex-row gap-8">
+                    {/* Table of Contents */}
+                    {showTableOfContents && toc.length > 0 && (
+                      <aside className="lg:w-1/4 order-first lg:order-last">
+                        <div className="sticky top-24">
+                          <h3 className="text-lg font-bold mb-4">Table of Contents</h3>
+                          <ul className="space-y-2">
+                              {toc.map(item => (
+                                  <li key={item.id} style={{ paddingLeft: `${(item.level - 1) * 1}rem` }}>
+                                      <a href={`#${item.id}`} onClick={(e) => handleTocClick(e, item.id)} className={`block text-sm transition-colors ${activeSection === item.id ? 'text-blue-500 font-bold' : (mode === 'dark' ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-black')}`}>{item.text}</a>
+                                  </li>
+                              ))}
+                          </ul>
+                        </div>
+                      </aside>
+                    )}
+
+                    <main className={toc.length > 0 && showTableOfContents ? 'lg:w-3/4' : 'w-full'}>
+                        {isEditing ? (
+                          <div className="mb-8">
+                            <textarea value={updatedContent} onChange={(e) => setUpdatedContent(e.target.value)} className={`w-full p-4 border-2 border-blue-500 rounded-xl focus:outline-none ${mode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}`} rows="20"/>
+                            <div className="flex gap-4 mt-4">
+                              <button onClick={updateBlog} className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"><FaCheck /> Save</button>
+                              <button onClick={() => setIsEditing(false)} className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"><FaTimes /> Cancel</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className={`prose prose-lg max-w-none ${getFontSizeClass()} ${mode === 'dark' ? 'prose-invert text-white' : 'text-gray-900'} prose-a:text-blue-600 prose-img:rounded-xl prose-img:shadow-lg ${mode === 'dark' ? 'prose-headings:text-white prose-p:text-gray-300 prose-li:text-gray-300 prose-strong:text-white prose-em:text-gray-300 prose-blockquote:text-gray-300 prose-code:text-gray-300 prose-pre:text-gray-300' : ''}`}>
+                            <div 
+                              className={`${mode === 'dark' ? 'text-gray-300' : 'text-gray-900'}`}
+                              dangerouslySetInnerHTML={createMarkup(processedContent)} 
+                            />
+                          </div>
+                        )}
+                    </main>
+                </div>
+
+                <Ad position="Inline" />
+          </div>
+
+          {showComments && (
+            <div className="mt-16" id="comments">
+              <h3 className={`text-3xl font-bold mb-8 ${mode === 'dark' ? 'text-white' : 'text-gray-900'}`}>💬 Comments ({allComment.length})</h3>
+              <Comment
+                addComment={addComment}
+                commentText={commentText}
+                setcommentText={setCommentText}
+                allComment={allComment}
+                fullName={fullName}
+                setFullName={setFullName}
+              />
+            </div>
+          )}
+
+          {showRelatedPosts && (
+            <section className="mt-16" id="related">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className={`text-3xl font-bold ${mode === 'dark' ? 'text-white' : 'text-gray-900'}`}>🔗 Related Posts</h2>
+                <Link to="/allblogs" className="text-blue-500 hover:underline font-medium">View All</Link>
               </div>
-              {isEditing ? (
-                <div className="content">
-                  <textarea
-                    value={updatedContent}
-                    onChange={(e) => setUpdatedContent(e.target.value)}
-                    className="w-full border p-2 rounded"
-                    rows="10"
-                  />
-                  <button
-                    onClick={updateBlog}
-                    className="mt-4 p-2 rounded-full border border-gray-300 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    aria-label="Save Changes"
-                  >
-                    Save Changes
-                  </button>
+              {otherBlogs.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {otherBlogs.map(blog => (
+                    <div key={blog.id} className={`rounded-2xl shadow-lg overflow-hidden group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 ${mode === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+                      <div className="relative">
+                        <img className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" src={blog.thumbnail} alt={blog.blogs?.title} />
+                        <span className="absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-bold bg-white/20 text-white backdrop-blur-sm border border-white/30">{blog.blogs?.category || 'General'}</span>
+                      </div>
+                      <div className="p-4">
+                        <h3 className={`text-lg font-bold line-clamp-2 mb-2 ${mode === 'dark' ? 'text-white' : 'text-gray-900'}`}>{blog.blogs?.title}</h3>
+                        <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+                           <span>{blog.date}</span>
+                           <span className="flex items-center gap-1"><FaEye/> {blog.blogs?.views || 0}</span>
+                        </div>
+                         <Link to={`/bloginfo/${blog.id}`} className="mt-4 inline-block text-blue-500 font-semibold hover:underline">Read More &rarr;</Link>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
-                <div className={`border-b mb-5 ${mode === 'dark' ? 'border-gray-600' : 'border-gray-400'}`} />
+                <p className="text-center py-10">No related posts found.</p>
               )}
-              <div className="content">
-                <div className={`[&>h1]:text-[32px] [&>h1]:font-bold [&>h1]:mb-2.5
-                  ${mode === 'dark' ? '[&>h1]:text-[#ff4d4d]' : '[&>h1]:text-black'}
-                  [&>h2]:text-[24px] [&>h2]:font-bold [&>h2]:mb-2.5
-                  ${mode === 'dark' ? '[&>h2]:text-white' : '[&>h2]:text-black'}
-                  [&>h3]:text-[18.72px] [&>h3]:font-bold [&>h3]:mb-2.5
-                  ${mode === 'dark' ? '[&>h3]:text-white' : '[&>h3]:text-black'}
-                  [&>h4]:text-[16px] [&>h4]:font-bold [&>h4]:mb-2.5
-                  ${mode === 'dark' ? '[&>h4]:text-white' : '[&>h4]:text-black'}
-                  [&>h5]:text-[13.28px] [&>h5]:font-bold [&>h5]:mb-2.5
-                  ${mode === 'dark' ? '[&>h5]:text-white' : '[&>h5]:text-black'}
-                  [&>h6]:text-[10px] [&>h6]:font-bold [&>h6]:mb-2.5
-                  ${mode === 'dark' ? '[&>h6]:text-white' : '[&>h6]:text-black'}
-                  [&>p]:text-[16px] [&>p]:mb-1.5
-                  ${mode === 'dark' ? '[&>p]:text-[#7efff5]' : '[&>p]:text-black'}
-                  [&>ul]:list-disc [&>ul]:mb-2
-                  ${mode === 'dark' ? '[&>ul]:text-white' : '[&>ul]:text-black'}
-                  [&>ol]:list-decimal [&>li]:mb-10
-                  ${mode === 'dark' ? '[&>ol]:text-white' : '[&>ol]:text-black'}
-                  [&>li]:list-decimal [&>ol]:mb-2
-                  ${mode === 'dark' ? '[&>ol]:text-white' : '[&>ol]:text-black'}
-                  [&>img]:rounded-lg
-                  `}
-                  dangerouslySetInnerHTML={createMarkup(getBlogs?.blogs?.content)}>
-                </div>
-              </div>
-              <Ad position="Inline" />
-              <div className="mt-4 flex items-center space-x-4">
-                <div className="flex space-x-2 mb-4">
-                  <FacebookShareButton url={shareUrl} quote={shareTitle}>
-                    <FacebookIcon size={32} round />
-                  </FacebookShareButton>
-                  <TwitterShareButton url={shareUrl} title={shareTitle}>
-                    <TwitterIcon size={32} round />
-                  </TwitterShareButton>
-                  <LinkedinShareButton url={shareUrl} title={shareTitle}>
-                    <LinkedinIcon size={32} round />
-                  </LinkedinShareButton>
-                  <WhatsappShareButton url={shareUrl} title={shareTitle}>
-                    <WhatsappIcon size={32} round />
-                  </WhatsappShareButton>
-                </div>
-                <button
-                  onClick={copyToClipboard}
-                  className="p-2 rounded-full border border-gray-300 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  aria-label="Copy Link"
-                >
-                  <FaCopy size={20} />
-                </button>
-                <button
-                  onClick={copyEmbedCode}
-                  className="p-2 rounded-full border border-gray-300 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  aria-label="Copy Embed Code"
-                >
-                  <FaCode size={20} />
-                </button>
-              </div>
-              <Ad position="Bottom Banner" />
-            </div>}
-        </div>
-
-        <Comment
-          addComment={addComment}
-          commentText={commentText}
-          setcommentText={setCommentText}
-          allComment={allComment}
-          fullName={fullName}
-          setFullName={setFullName}
-        />
-
-        <section className="mt-8">
-          <h2 className="text-2xl font-bold mb-4">You Can Check Also:</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {otherBlogs.map(blog => (
-              <div key={blog.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-                <img
-                  className="w-full h-48 object-cover"
-                  src={blog.thumbnail}
-                  alt={blog.blogs?.title}
-                />
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold">{blog.blogs?.title}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{blog.date}</p>
-                  <a href={`/bloginfo/${blog.id}`} className="text-blue-500 hover:underline">Read More</a>
-                </div>
-              </div>
-            ))}
-          </div>
+            </section>
+          )}
         </section>
-      </section>
+      </div>
     </Layout>
   );
 }

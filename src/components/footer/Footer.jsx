@@ -1,114 +1,163 @@
 import React, { useContext } from 'react';
+import { Typography, Button } from '@material-tailwind/react';
+import { Link } from 'react-router-dom';
+import { FaGithub, FaLinkedin, FaTwitter, FaEnvelope, FaHeart, FaCode, FaRocket, FaMapMarkerAlt, FaPhone } from 'react-icons/fa';
 import myContext from '../../context/data/myContext';
 
 function Footer() {
   const context = useContext(myContext);
   const { mode } = context;
+  
+  const currentYear = new Date().getFullYear();
+  
+  const socialLinks = [
+    { icon: FaGithub, url: 'https://github.com/phcoder05', label: 'GitHub' },
+    { icon: FaLinkedin, url: 'https://linkedin.com/in/pankaj-hadole', label: 'LinkedIn' },
+    { icon: FaTwitter, url: 'https://twitter.com/phcoder05', label: 'Twitter' },
+    { icon: FaEnvelope, url: 'mailto:pankajhadole24@gmail.com', label: 'Email' }
+  ];
+
+            const quickLinks = [
+            { label: 'Home', path: '/' },
+            { label: 'About Blog', path: '/about' },
+            { label: 'All Articles', path: '/allblogs' },
+            { label: 'Categories', path: '/allblogs' }
+          ];
 
   return (
-    <footer
-      className={`bg-gray-900 dark:bg-gray-800 text-white ${mode === 'dark' ? 'bg-gray-900' : 'bg-gray-800'}`}
-    >
-      <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row justify-between items-center">
-        {/* Left Content: Logo */}
-        <div className="flex items-center space-x-4">
-          <img
-            className="w-12 h-12 rounded-full"
-            src="https://i.postimg.cc/ncrXtppP/Screenshot-5.jpg"
-            alt="logo"
-          />
-          <span className="text-xl font-semibold md:text-2xl">PHCoder05</span>
+    <footer className={`relative ${
+      mode === 'dark' 
+        ? 'bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900' 
+        : 'bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800'
+    } text-white`}>
+      
+      {/* Main Footer Content */}
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          
+          {/* Brand Section */}
+          <div className="lg:col-span-2">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-teal-500 to-blue-500 flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-xl">P</span>
+              </div>
+              <Typography variant="h4" className="text-white font-bold">
+                PHcoder05
+              </Typography>
         </div>
 
-        {/* Center Content: Copyright */}
-        <p className="text-sm mt-4 md:mt-0 text-center md:text-center flex-grow">
-          © 2024 PHcoder05 —
-          <a
-            href="https://www.linkedin.com/in/pankaj-hadole-722476232/"
-            className="text-blue-400 hover:text-blue-600 ml-1"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Pankaj Hadole
-          </a>
-        </p>
+            <Typography variant="paragraph" className="text-gray-300 mb-6 max-w-md leading-relaxed">
+              Your go-to destination for insightful technology articles, programming tutorials, 
+              and the latest trends in software development. Join our community of learners 
+              and tech enthusiasts!
+            </Typography>
+            
+            {/* Contact Info */}
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3 text-gray-300">
+                <FaMapMarkerAlt className="text-teal-400" />
+                <span>India</span>
+              </div>
+              <div className="flex items-center space-x-3 text-gray-300">
+                <FaEnvelope className="text-teal-400" />
+                <a href="mailto:pankajhadole24@gmail.com" className="hover:text-teal-400 transition-colors">
+                  pankajhadole24@gmail.com
+                </a>
+              </div>
+            </div>
+          </div>
 
-        {/* Right Content: Social Media Icons */}
-        <div className="flex space-x-4 mt-4 md:mt-0">
-          <a
-            href="https://www.facebook.com/"
-            className="text-gray-400 hover:text-white transition-colors duration-300"
-            aria-label="Facebook"
-          >
-            <svg
-              fill="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              className="w-6 h-6"
-              viewBox="0 0 24 24"
-            >
-              <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
-            </svg>
-          </a>
+          {/* Quick Links */}
+          <div>
+            <Typography variant="h6" className="text-white font-semibold mb-6">
+              Quick Links
+            </Typography>
+            <div className="space-y-3">
+              {quickLinks.map((link, index) => (
+                <Link
+                  key={index}
+                  to={link.path}
+                  className="block text-gray-300 hover:text-teal-400 transition-colors duration-300"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
 
-          <a
-            href="https://twitter.com/pankaj_hadole"
-            className="text-gray-400 hover:text-white transition-colors duration-300"
-            aria-label="Twitter"
-          >
-            <svg
-              fill="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              className="w-6 h-6"
-              viewBox="0 0 24 24"
-            >
-              <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z" />
-            </svg>
-          </a>
+          {/* Skills & Technologies */}
+          <div>
+            <Typography variant="h6" className="text-white font-semibold mb-6">
+              Technologies
+            </Typography>
+            <div className="space-y-2">
+              {['React.js', 'Node.js', 'Python', 'MongoDB', 'AWS', 'Docker'].map((tech, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <FaCode className="text-teal-400 w-3 h-3" />
+                  <span className="text-gray-300 text-sm">{tech}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
 
-          <a
-            href="https://www.instagram.com/krish_0512_"
-            className="text-gray-400 hover:text-white transition-colors duration-300"
-            aria-label="Instagram"
-          >
-            <svg
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              className="w-6 h-6"
-              viewBox="0 0 24 24"
-            >
-              <rect width={20} height={20} x={2} y={2} rx={5} ry={5} />
-              <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zm1.5-4.87h.01" />
-            </svg>
-          </a>
-
-          <a
-            href="https://www.linkedin.com/in/pankaj-hadole-722476232/"
-            className="text-gray-400 hover:text-white transition-colors duration-300"
-            aria-label="LinkedIn"
-          >
-            <svg
-              fill="currentColor"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={0}
-              className="w-6 h-6"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke="none"
-                d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"
+        {/* Newsletter Signup */}
+        <div className="mt-12 p-8 bg-gradient-to-r from-teal-500/10 to-blue-500/10 rounded-2xl border border-teal-500/20">
+          <div className="text-center">
+            <Typography variant="h5" className="text-white font-bold mb-4">
+              Never Miss an Article!
+            </Typography>
+            <Typography variant="paragraph" className="text-gray-300 mb-6">
+              Subscribe to our blog newsletter and get the latest programming tutorials and tech insights delivered straight to your inbox.
+            </Typography>
+            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="flex-1 px-4 py-3 rounded-lg bg-gray-800 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-teal-500"
               />
-              <circle cx={4} cy={4} r={2} stroke="none" />
-            </svg>
-          </a>
+              <Button className="bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 px-6 py-3 rounded-lg">
+                Subscribe
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Bar */}
+      <div className="border-t border-gray-700">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            
+            {/* Copyright */}
+            <div className="flex items-center space-x-2 text-gray-300">
+              <span>© {currentYear} PHcoder05. Made with</span>
+              <FaHeart className="text-red-500 animate-pulse" />
+              <span>by Pankaj Hadole</span>
+            </div>
+
+            {/* Social Links */}
+            <div className="flex items-center space-x-4">
+              {socialLinks.map((social, index) => (
+                <a
+                  key={index}
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 rounded-full bg-gray-800 hover:bg-gradient-to-r hover:from-teal-500 hover:to-blue-500 text-gray-300 hover:text-white transition-all duration-300 transform hover:scale-110"
+                  aria-label={social.label}
+                >
+                  <social.icon className="w-5 h-5" />
+                </a>
+              ))}
+            </div>
+
+            {/* Blog Badge */}
+            <div className="flex items-center space-x-2 text-gray-300">
+              <FaRocket className="text-teal-400" />
+              <span className="text-sm">New articles weekly</span>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
