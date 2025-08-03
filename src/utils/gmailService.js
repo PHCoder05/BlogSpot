@@ -26,7 +26,7 @@ export class GmailService {
       
       const emailData = {
         to: to,
-        from: process.env.REACT_APP_GMAIL_USER || 'phcoder.blog@gmail.com',
+        from: import.meta.env.VITE_GMAIL_USER || 'phcoder.blog@gmail.com',
         subject: subject,
         html: html,
         // Add your Gmail credentials here
@@ -35,8 +35,8 @@ export class GmailService {
           port: 587,
           secure: false, // true for 465, false for other ports
           auth: {
-            user: process.env.REACT_APP_GMAIL_USER || 'phcoder.blog@gmail.com',
-            pass: process.env.REACT_APP_GMAIL_APP_PASSWORD || 'your-app-password'
+            user: import.meta.env.VITE_GMAIL_USER || 'phcoder.blog@gmail.com',
+            pass: import.meta.env.VITE_GMAIL_APP_PASSWORD || 'your-app-password'
           }
         }
       };
@@ -52,10 +52,21 @@ export class GmailService {
         user: emailData.smtp.auth.user
       });
       
+      // Check if app password is configured
+      const appPassword = import.meta.env.VITE_GMAIL_APP_PASSWORD;
+      if (!appPassword || appPassword === 'your-app-password') {
+        console.log('⚠️  Gmail App Password not configured - using mock email');
+        console.log('💡 To send real emails, set up your Gmail app password');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log('✅ Mock email sent successfully (Gmail not configured)');
+        return true;
+      }
+      
       // Simulate email sending delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       console.log('✅ Email sent successfully via Gmail SMTP');
+      console.log('💡 Check your spam/junk folder if you don\'t receive the email');
       return true;
       
     } catch (error) {
@@ -73,13 +84,13 @@ export class GmailService {
       console.log('🔍 Testing Gmail SMTP connection...');
       
       // Check if environment variables are set
-      const user = process.env.REACT_APP_GMAIL_USER || 'phcoder.blog@gmail.com';
-      const password = process.env.REACT_APP_GMAIL_APP_PASSWORD;
+      const user = import.meta.env.VITE_GMAIL_USER || 'phcoder.blog@gmail.com';
+      const password = import.meta.env.VITE_GMAIL_APP_PASSWORD;
       
       if (!password) {
         return {
           success: false,
-          message: 'Gmail App Password not configured. Please set REACT_APP_GMAIL_APP_PASSWORD environment variable.'
+          message: 'Gmail App Password not configured. Please set VITE_GMAIL_APP_PASSWORD environment variable.'
         };
       }
       

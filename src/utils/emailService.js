@@ -16,8 +16,8 @@ export class EmailService {
       const emailContent = this.generateEmailContent(blogData);
       
       // Priority 1: Gmail SMTP (Good for small blogs - 500 emails/day)
-      const gmailUser = process.env.REACT_APP_GMAIL_USER || 'phcoder.blog@gmail.com';
-      const gmailPassword = process.env.REACT_APP_GMAIL_APP_PASSWORD;
+      const gmailUser = import.meta.env.VITE_GMAIL_USER || 'phcoder.blog@gmail.com';
+      const gmailPassword = import.meta.env.VITE_GMAIL_APP_PASSWORD;
       
       if (gmailPassword) {
         console.log('📧 Using Gmail SMTP for sending email (Good for small blogs)...');
@@ -287,7 +287,7 @@ export class EmailService {
      console.log('📧 Sending welcome email to:', to);
      
      // Try Gmail SMTP
-     const gmailPassword = process.env.REACT_APP_GMAIL_APP_PASSWORD;
+     const gmailPassword = import.meta.env.VITE_GMAIL_APP_PASSWORD;
      if (gmailPassword) {
        return await GmailService.sendEmail(to, subject, html);
      }
@@ -373,7 +373,7 @@ export class EmailService {
       console.log('📧 Sending unsubscribe email to:', to);
       
       // Try Gmail SMTP
-      const gmailPassword = process.env.REACT_APP_GMAIL_APP_PASSWORD;
+      const gmailPassword = import.meta.env.VITE_GMAIL_APP_PASSWORD;
       if (gmailPassword) {
         return await GmailService.sendEmail(to, subject, html);
       }

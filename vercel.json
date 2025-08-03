@@ -6,8 +6,7 @@
       }
     ],
     "env": {
-      "REACT_APP_GMAIL_USER": "phcoder.blog@gmail.com",
-      "REACT_APP_GMAIL_APP_PASSWORD": "ortb meju xmif ritl"
-
+      "VITE_GMAIL_USER": "phcoder.blog@gmail.com",
+      "VITE_GMAIL_APP_PASSWORD": "ortb meju xmif ritl"
     }
 }

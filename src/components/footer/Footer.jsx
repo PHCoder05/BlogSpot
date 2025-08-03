@@ -1,68 +1,73 @@
-import React, { useContext } from 'react';
-import { Typography, Button } from '@material-tailwind/react';
-import { Link } from 'react-router-dom';
-import { FaGithub, FaLinkedin, FaTwitter, FaEnvelope, FaHeart, FaCode, FaRocket, FaMapMarkerAlt, FaPhone } from 'react-icons/fa';
-import myContext from '../../context/data/myContext';
+import React from "react";
+import { Link } from "react-router-dom";
+import { Typography, Button } from "@material-tailwind/react";
+import { 
+  FaGithub, 
+  FaLinkedin, 
+  FaTwitter, 
+  FaEnvelope, 
+  FaHeart, 
+  FaRocket, 
+  FaCode 
+} from "react-icons/fa";
+import NewsletterSubscription from "../NewsletterSubscription";
 
 function Footer() {
-  const context = useContext(myContext);
-  const { mode } = context;
-  
   const currentYear = new Date().getFullYear();
-  
-  const socialLinks = [
-    { icon: FaGithub, url: 'https://github.com/phcoder05', label: 'GitHub' },
-    { icon: FaLinkedin, url: 'https://linkedin.com/in/pankaj-hadole', label: 'LinkedIn' },
-    { icon: FaTwitter, url: 'https://twitter.com/phcoder05', label: 'Twitter' },
-    { icon: FaEnvelope, url: 'mailto:pankajhadole24@gmail.com', label: 'Email' }
+
+  const quickLinks = [
+    { label: "Home", path: "/" },
+    { label: "About Blog", path: "/about" },
+    { label: "All Articles", path: "/allblogs" },
+    { label: "Categories", path: "/categories" },
   ];
 
-            const quickLinks = [
-            { label: 'Home', path: '/' },
-            { label: 'About Blog', path: '/about' },
-            { label: 'All Articles', path: '/allblogs' },
-            { label: 'Categories', path: '/allblogs' }
-          ];
+  const socialLinks = [
+    {
+      label: "GitHub",
+      url: "https://github.com/PHCoder05",
+      icon: FaGithub,
+    },
+    {
+      label: "LinkedIn",
+      url: "https://linkedin.com/in/pankaj-hadole",
+      icon: FaLinkedin,
+    },
+    {
+      label: "Twitter",
+      url: "https://twitter.com/phcoder05",
+      icon: FaTwitter,
+    },
+    {
+      label: "Email",
+      url: "mailto:pankajhadole24@gmail.com",
+      icon: FaEnvelope,
+    },
+  ];
 
   return (
-    <footer className={`relative ${
-      mode === 'dark' 
-        ? 'bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900' 
-        : 'bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800'
-    } text-white`}>
-      
-      {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <footer className="bg-gray-900 text-white">
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        
+        {/* Main Footer Content */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           
-          {/* Brand Section */}
-          <div className="lg:col-span-2">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-teal-500 to-blue-500 flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-xl">P</span>
-              </div>
-              <Typography variant="h4" className="text-white font-bold">
-                PHcoder05
-              </Typography>
-        </div>
-
-            <Typography variant="paragraph" className="text-gray-300 mb-6 max-w-md leading-relaxed">
-              Your go-to destination for insightful technology articles, programming tutorials, 
-              and the latest trends in software development. Join our community of learners 
-              and tech enthusiasts!
+          {/* About Section */}
+          <div>
+            <Typography variant="h6" className="text-white font-semibold mb-6">
+              About PHcoder05
             </Typography>
-            
-            {/* Contact Info */}
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3 text-gray-300">
-                <FaMapMarkerAlt className="text-teal-400" />
-                <span>India</span>
+            <Typography variant="paragraph" className="text-gray-300 mb-4">
+              Your go-to destination for insightful technology articles, programming tutorials, and the latest trends in software development. Join our community of learners and tech enthusiasts!
+            </Typography>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <FaCode className="text-teal-400 w-4 h-4" />
+                <span className="text-gray-300 text-sm">India</span>
               </div>
-              <div className="flex items-center space-x-3 text-gray-300">
-                <FaEnvelope className="text-teal-400" />
-                <a href="mailto:pankajhadole24@gmail.com" className="hover:text-teal-400 transition-colors">
-                  pankajhadole24@gmail.com
-                </a>
+              <div className="flex items-center space-x-2">
+                <FaEnvelope className="text-teal-400 w-4 h-4" />
+                <span className="text-gray-300 text-sm">pankajhadole24@gmail.com</span>
               </div>
             </div>
           </div>
@@ -103,24 +108,11 @@ function Footer() {
 
         {/* Newsletter Signup */}
         <div className="mt-12 p-8 bg-gradient-to-r from-teal-500/10 to-blue-500/10 rounded-2xl border border-teal-500/20">
-          <div className="text-center">
-            <Typography variant="h5" className="text-white font-bold mb-4">
-              Never Miss an Article!
-            </Typography>
-            <Typography variant="paragraph" className="text-gray-300 mb-6">
-              Subscribe to our blog newsletter and get the latest programming tutorials and tech insights delivered straight to your inbox.
-            </Typography>
-            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 rounded-lg bg-gray-800 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-teal-500"
-              />
-              <Button className="bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 px-6 py-3 rounded-lg">
-                Subscribe
-              </Button>
-            </div>
-          </div>
+          <NewsletterSubscription 
+            title="Never Miss an Article!"
+            description="Subscribe to our blog newsletter and get the latest programming tutorials and tech insights delivered straight to your inbox."
+            className="text-center"
+          />
         </div>
       </div>
 
