@@ -35,6 +35,27 @@ function EditBlog() {
   const [fetching, setFetching] = useState(true);
   const [showPreview, setShowPreview] = useState(false);
   const [previewMode, setPreviewMode] = useState('desktop'); // 'desktop', 'tablet', 'mobile'
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [seoData, setSeoData] = useState({
+    metaTitle: '',
+    metaDescription: '',
+    keywords: '',
+    canonicalUrl: ''
+  });
+  const [publishSettings, setPublishSettings] = useState({
+    status: 'draft', // 'draft', 'published', 'scheduled'
+    publishDate: '',
+    featured: false,
+    allowComments: true,
+    allowSharing: true
+  });
+  const [advancedSettings, setAdvancedSettings] = useState({
+    readingLevel: 'general', // 'general', 'intermediate', 'advanced'
+    estimatedReadTime: 0,
+    wordCount: 0,
+    characterCount: 0,
+    paragraphCount: 0
+  });
   const quillRef = React.useRef(null);
 
   const categories = [
@@ -241,6 +262,84 @@ function EditBlog() {
       console.error("Error updating blog:", error);
       toast.error("Error updating post");
     }
+  };
+
+  // SEO and Advanced Functions
+  const generateSeoData = () => {
+    if (!blogs.title.trim()) {
+      toast.error("Please enter a blog title first");
+      return;
+    }
+    
+    const title = blogs.title.trim();
+    const content = blogs.content.replace(/<[^>]*>/g, '').substring(0, 160);
+    
+    setSeoData({
+      metaTitle: title.length > 60 ? title.substring(0, 60) + '...' : title,
+      metaDescription: content.length > 160 ? content.substring(0, 160) + '...' : content,
+      keywords: tags.join(', '),
+      canonicalUrl: `https://yourdomain.com/blog/${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+    });
+    
+    toast.success("SEO data generated successfully!");
+  };
+
+  const analyzeContent = () => {
+    const content = blogs.content.replace(/<[^>]*>/g, '');
+    const words = content.split(/\s+/).filter(word => word.length > 0);
+    const characters = content.length;
+    const paragraphs = (blogs.content.match(/<p[^>]*>/g) || []).length;
+    const readTime = Math.max(1, Math.ceil(words.length / 200));
+    
+    setAdvancedSettings({
+      ...advancedSettings,
+      wordCount: words.length,
+      characterCount: characters,
+      paragraphCount: paragraphs,
+      estimatedReadTime: readTime
+    });
+    
+    toast.success("Content analysis completed!");
+  };
+
+  const autoGenerateTags = () => {
+    if (!blogs.content.trim()) {
+      toast.error("Please add some content first");
+      return;
+    }
+    
+    const content = blogs.content.replace(/<[^>]*>/g, '').toLowerCase();
+    const commonWords = ['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'];
+    const words = content.split(/\s+/)
+      .filter(word => word.length > 3 && !commonWords.includes(word))
+      .slice(0, 10);
+    
+    const uniqueWords = [...new Set(words)];
+    const newTags = uniqueWords.slice(0, 5);
+    
+    setTags([...tags, ...newTags.filter(tag => !tags.includes(tag))]);
+    toast.success("Auto-generated tags added!");
+  };
+
+  const schedulePost = () => {
+    if (!publishSettings.publishDate) {
+      toast.error("Please select a publish date");
+      return;
+    }
+    
+    setPublishSettings({
+      ...publishSettings,
+      status: 'scheduled'
+    });
+    
+    toast.success("Post scheduled successfully!");
+  };
+
+  const toggleFeatured = () => {
+    setPublishSettings({
+      ...publishSettings,
+      featured: !publishSettings.featured
+    });
   };
 
   function createMarkup(c) {
@@ -613,58 +712,297 @@ function EditBlog() {
           )}
         </div>
 
-        {/* Publish Status */}
-        <div className="mb-6 p-4 rounded-lg border-2 border-dashed border-gray-300" style={{
-          background: mode === "dark" ? "#2d3748" : "#f7fafc"
-        }}>
-          <Typography
-            variant="h6"
-            className="mb-3 font-semibold flex items-center gap-2"
-            style={{ color: mode === "dark" ? "white" : "black" }}
-          >
-            📊 Update Status
-          </Typography>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span style={{ color: mode === "dark" ? "white" : "black" }}>Title:</span>
-              <span className={blogs.title ? 'text-green-500' : 'text-red-500'}>
-                {blogs.title ? '✓ Complete' : '✗ Required'}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span style={{ color: mode === "dark" ? "white" : "black" }}>Thumbnail:</span>
-              <span className={(currentThumbnail || thumbnail || thumbnailLink) ? 'text-green-500' : 'text-yellow-500'}>
-                {(currentThumbnail || thumbnail || thumbnailLink) ? '✓ Complete' : '⚠ Optional'}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span style={{ color: mode === "dark" ? "white" : "black" }}>Category:</span>
-              <span className={blogs.category ? 'text-green-500' : 'text-red-500'}>
-                {blogs.category ? '✓ Complete' : '✗ Required'}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span style={{ color: mode === "dark" ? "white" : "black" }}>Content:</span>
-              <span className={blogs.content && blogs.content !== '<p><br></p>' ? 'text-green-500' : 'text-red-500'}>
-                {blogs.content && blogs.content !== '<p><br></p>' ? '✓ Complete' : '✗ Required'}
-              </span>
-            </div>
-            <div className="pt-2 border-t border-gray-300">
-              <div className="flex justify-between font-semibold">
-                <span style={{ color: mode === "dark" ? "white" : "black" }}>Overall:</span>
-                <span className={
-                  blogs.title && blogs.category && 
-                  blogs.content && blogs.content !== '<p><br></p>' 
-                    ? 'text-green-500' : 'text-yellow-500'
-                }>
-                  {blogs.title && blogs.category && 
+                 {/* Advanced Tools */}
+         <div className="mb-6 p-4 rounded-lg border-2 border-dashed border-gray-300" style={{
+           background: mode === "dark" ? "#2d3748" : "#f7fafc"
+         }}>
+           <div className="flex justify-between items-center mb-4">
+             <Typography
+               variant="h6"
+               className="font-semibold flex items-center gap-2"
+               style={{ color: mode === "dark" ? "white" : "black" }}
+             >
+               🛠️ Advanced Tools
+             </Typography>
+             <Button
+               size="sm"
+               variant={showAdvancedOptions ? "filled" : "outlined"}
+               onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+             >
+               {showAdvancedOptions ? 'Hide' : 'Show'}
+             </Button>
+           </div>
+
+           {showAdvancedOptions && (
+             <div className="space-y-4">
+               {/* SEO Tools */}
+               <div className="space-y-2">
+                 <Typography
+                   variant="small"
+                   className="font-semibold"
+                   style={{ color: mode === "dark" ? "white" : "black" }}
+                 >
+                   📈 SEO Tools
+                 </Typography>
+                 <div className="grid grid-cols-2 gap-2">
+                   <Button
+                     size="sm"
+                     variant="outlined"
+                     onClick={generateSeoData}
+                     className="text-xs"
+                   >
+                     Generate SEO
+                   </Button>
+                   <Button
+                     size="sm"
+                     variant="outlined"
+                     onClick={autoGenerateTags}
+                     className="text-xs"
+                   >
+                     Auto Tags
+                   </Button>
+                 </div>
+               </div>
+
+               {/* Content Analysis */}
+               <div className="space-y-2">
+                 <Typography
+                   variant="small"
+                   className="font-semibold"
+                   style={{ color: mode === "dark" ? "white" : "black" }}
+                 >
+                   📊 Content Analysis
+                 </Typography>
+                 <Button
+                   size="sm"
+                   variant="outlined"
+                   onClick={analyzeContent}
+                   className="w-full text-xs"
+                 >
+                   Analyze Content
+                 </Button>
+                 <div className="text-xs space-y-1">
+                   <div className="flex justify-between">
+                     <span style={{ color: mode === "dark" ? "white" : "black" }}>Words:</span>
+                     <span>{advancedSettings.wordCount}</span>
+                   </div>
+                   <div className="flex justify-between">
+                     <span style={{ color: mode === "dark" ? "white" : "black" }}>Characters:</span>
+                     <span>{advancedSettings.characterCount}</span>
+                   </div>
+                   <div className="flex justify-between">
+                     <span style={{ color: mode === "dark" ? "white" : "black" }}>Paragraphs:</span>
+                     <span>{advancedSettings.paragraphCount}</span>
+                   </div>
+                   <div className="flex justify-between">
+                     <span style={{ color: mode === "dark" ? "white" : "black" }}>Read Time:</span>
+                     <span>{advancedSettings.estimatedReadTime} min</span>
+                   </div>
+                 </div>
+               </div>
+
+               {/* Publishing Options */}
+               <div className="space-y-2">
+                 <Typography
+                   variant="small"
+                   className="font-semibold"
+                   style={{ color: mode === "dark" ? "white" : "black" }}
+                 >
+                   📅 Publishing
+                 </Typography>
+                 <select
+                   className={`w-full p-2 rounded border text-sm ${
+                     mode === "dark" 
+                       ? "bg-gray-700 border-gray-600 text-white" 
+                       : "bg-white border-gray-300 text-gray-900"
+                   }`}
+                   value={publishSettings.status}
+                   onChange={(e) => setPublishSettings({
+                     ...publishSettings,
+                     status: e.target.value
+                   })}
+                 >
+                   <option value="draft">Draft</option>
+                   <option value="published">Published</option>
+                   <option value="scheduled">Scheduled</option>
+                 </select>
+                 
+                 {publishSettings.status === 'scheduled' && (
+                   <input
+                     type="datetime-local"
+                     className={`w-full p-2 rounded border text-sm ${
+                       mode === "dark" 
+                         ? "bg-gray-700 border-gray-600 text-white" 
+                         : "bg-white border-gray-300 text-gray-900"
+                     }`}
+                     value={publishSettings.publishDate}
+                     onChange={(e) => setPublishSettings({
+                       ...publishSettings,
+                       publishDate: e.target.value
+                     })}
+                   />
+                 )}
+
+                 <div className="space-y-2">
+                   <label className="flex items-center gap-2">
+                     <input
+                       type="checkbox"
+                       checked={publishSettings.featured}
+                       onChange={toggleFeatured}
+                       className="rounded"
+                     />
+                     <span className="text-sm" style={{ color: mode === "dark" ? "white" : "black" }}>
+                       Featured Post
+                     </span>
+                   </label>
+                   <label className="flex items-center gap-2">
+                     <input
+                       type="checkbox"
+                       checked={publishSettings.allowComments}
+                       onChange={(e) => setPublishSettings({
+                         ...publishSettings,
+                         allowComments: e.target.checked
+                       })}
+                       className="rounded"
+                     />
+                     <span className="text-sm" style={{ color: mode === "dark" ? "white" : "black" }}>
+                       Allow Comments
+                     </span>
+                   </label>
+                   <label className="flex items-center gap-2">
+                     <input
+                       type="checkbox"
+                       checked={publishSettings.allowSharing}
+                       onChange={(e) => setPublishSettings({
+                         ...publishSettings,
+                         allowSharing: e.target.checked
+                       })}
+                       className="rounded"
+                     />
+                     <span className="text-sm" style={{ color: mode === "dark" ? "white" : "black" }}>
+                       Allow Sharing
+                     </span>
+                   </label>
+                 </div>
+               </div>
+             </div>
+           )}
+         </div>
+
+         {/* SEO Data Section */}
+         {seoData.metaTitle && (
+           <div className="mb-6 p-4 rounded-lg border-2 border-dashed border-gray-300" style={{
+             background: mode === "dark" ? "#2d3748" : "#f7fafc"
+           }}>
+             <Typography
+               variant="h6"
+               className="mb-3 font-semibold flex items-center gap-2"
+               style={{ color: mode === "dark" ? "white" : "black" }}
+             >
+               🔍 SEO Data
+             </Typography>
+             <div className="space-y-3 text-sm">
+               <div>
+                 <label className="block text-xs font-medium mb-1" style={{ color: mode === "dark" ? "white" : "black" }}>
+                   Meta Title
+                 </label>
+                 <input
+                   type="text"
+                   value={seoData.metaTitle}
+                   onChange={(e) => setSeoData({...seoData, metaTitle: e.target.value})}
+                   className={`w-full p-2 rounded border text-xs ${
+                     mode === "dark" 
+                       ? "bg-gray-700 border-gray-600 text-white" 
+                       : "bg-white border-gray-300 text-gray-900"
+                   }`}
+                 />
+               </div>
+               <div>
+                 <label className="block text-xs font-medium mb-1" style={{ color: mode === "dark" ? "white" : "black" }}>
+                   Meta Description
+                 </label>
+                 <textarea
+                   value={seoData.metaDescription}
+                   onChange={(e) => setSeoData({...seoData, metaDescription: e.target.value})}
+                   rows={3}
+                   className={`w-full p-2 rounded border text-xs ${
+                     mode === "dark" 
+                       ? "bg-gray-700 border-gray-600 text-white" 
+                       : "bg-white border-gray-300 text-gray-900"
+                   }`}
+                 />
+               </div>
+               <div>
+                 <label className="block text-xs font-medium mb-1" style={{ color: mode === "dark" ? "white" : "black" }}>
+                   Keywords
+                 </label>
+                 <input
+                   type="text"
+                   value={seoData.keywords}
+                   onChange={(e) => setSeoData({...seoData, keywords: e.target.value})}
+                   className={`w-full p-2 rounded border text-xs ${
+                     mode === "dark" 
+                       ? "bg-gray-700 border-gray-600 text-white" 
+                       : "bg-white border-gray-300 text-gray-900"
+                   }`}
+                 />
+               </div>
+             </div>
+           </div>
+         )}
+
+         {/* Publish Status */}
+         <div className="mb-6 p-4 rounded-lg border-2 border-dashed border-gray-300" style={{
+           background: mode === "dark" ? "#2d3748" : "#f7fafc"
+         }}>
+           <Typography
+             variant="h6"
+             className="mb-3 font-semibold flex items-center gap-2"
+             style={{ color: mode === "dark" ? "white" : "black" }}
+           >
+             📊 Update Status
+           </Typography>
+           <div className="space-y-2 text-sm">
+             <div className="flex justify-between">
+               <span style={{ color: mode === "dark" ? "white" : "black" }}>Title:</span>
+               <span className={blogs.title ? 'text-green-500' : 'text-red-500'}>
+                 {blogs.title ? '✓ Complete' : '✗ Required'}
+               </span>
+             </div>
+             <div className="flex justify-between">
+               <span style={{ color: mode === "dark" ? "white" : "black" }}>Thumbnail:</span>
+               <span className={(currentThumbnail || thumbnail || thumbnailLink) ? 'text-green-500' : 'text-yellow-500'}>
+                 {(currentThumbnail || thumbnail || thumbnailLink) ? '✓ Complete' : '⚠ Optional'}
+               </span>
+             </div>
+             <div className="flex justify-between">
+               <span style={{ color: mode === "dark" ? "white" : "black" }}>Category:</span>
+               <span className={blogs.category ? 'text-green-500' : 'text-red-500'}>
+                 {blogs.category ? '✓ Complete' : '✗ Required'}
+               </span>
+             </div>
+             <div className="flex justify-between">
+               <span style={{ color: mode === "dark" ? "white" : "black" }}>Content:</span>
+               <span className={blogs.content && blogs.content !== '<p><br></p>' ? 'text-green-500' : 'text-red-500'}>
+                 {blogs.content && blogs.content !== '<p><br></p>' ? '✓ Complete' : '✗ Required'}
+               </span>
+             </div>
+             <div className="pt-2 border-t border-gray-300">
+               <div className="flex justify-between font-semibold">
+                 <span style={{ color: mode === "dark" ? "white" : "black" }}>Overall:</span>
+                 <span className={
+                   blogs.title && blogs.category && 
                    blogs.content && blogs.content !== '<p><br></p>' 
-                    ? '✓ Ready to Update' : '⚠ Needs Completion'}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+                     ? 'text-green-500' : 'text-yellow-500'
+                 }>
+                   {blogs.title && blogs.category && 
+                    blogs.content && blogs.content !== '<p><br></p>' 
+                     ? '✓ Ready to Update' : '⚠ Needs Completion'}
+                 </span>
+               </div>
+             </div>
+           </div>
+         </div>
 
         {/* Content Editor */}
         <div className="mb-6">
@@ -676,44 +1014,89 @@ function EditBlog() {
             Blog Content
           </Typography>
           
-          <div className={`rounded-lg border-2 ${
-            mode === "dark" ? "border-gray-600" : "border-gray-300"
-          }`}>
-            <DynamicQuillEditor
-              ref={quillRef}
-              value={blogs.content}
-              onChange={(content) => setBlogs({ ...blogs, content })}
-              modules={{
-                toolbar: [
-                  [{ 'header': '1'}, {'header': '2'}, { 'font': [] }],
-                  [{size: []}],
-                  ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                  [{'list': 'ordered'}, {'list': 'bullet'}, 
-                   {'indent': '-1'}, {'indent': '+1'}],
-                  ['link', 'image', 'video', 'code-block'],
-                  ['clean'],
-                  ['color', 'background'],
-                  ['table']
-                ],
-                clipboard: {
-                  matchVisual: false,
-                },
-              }}
-              formats={[
-                'header', 'font', 'size',
-                'bold', 'italic', 'underline', 'strike', 'blockquote',
-                'list', 'bullet', 'indent',
-                'link', 'image', 'video', 'code-block',
-                'color', 'background',
-                'table'
-              ]}
-              theme="snow"
-              style={{
-                backgroundColor: mode === "dark" ? '#374151' : 'white',
-                color: mode === "dark" ? 'white' : 'black'
-              }}
-            />
-          </div>
+                     <div className={`rounded-lg border-2 ${
+             mode === "dark" ? "border-gray-600" : "border-gray-300"
+           }`}>
+             <DynamicQuillEditor
+               ref={quillRef}
+               value={blogs.content}
+               onChange={(content) => setBlogs({ ...blogs, content })}
+               modules={{
+                 toolbar: [
+                   [{ 'header': '1'}, {'header': '2'}, { 'font': [] }],
+                   [{size: []}],
+                   ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                   [{'list': 'ordered'}, {'list': 'bullet'}, 
+                    {'indent': '-1'}, {'indent': '+1'}],
+                   ['link', 'image', 'video', 'code-block'],
+                   ['clean'],
+                   ['color', 'background'],
+                   ['table']
+                 ],
+                 clipboard: {
+                   matchVisual: false,
+                 },
+               }}
+               formats={[
+                 'header', 'font', 'size',
+                 'bold', 'italic', 'underline', 'strike', 'blockquote',
+                 'list', 'bullet', 'indent',
+                 'link', 'image', 'video', 'code-block',
+                 'color', 'background',
+                 'table'
+               ]}
+               theme="snow"
+               style={{
+                 backgroundColor: mode === "dark" ? '#374151' : 'white',
+                 color: mode === "dark" ? 'white' : 'black'
+               }}
+             />
+
+             {/* Content Tools */}
+             <div className="mt-4 p-4 border-t border-gray-200">
+               <Typography
+                 variant="h6"
+                 className="mb-3 font-semibold flex items-center gap-2"
+                 style={{ color: mode === "dark" ? "white" : "black" }}
+               >
+                 🎯 Content Tools
+               </Typography>
+               <div className="grid grid-cols-2 gap-2">
+                 <Button
+                   size="sm"
+                   variant="outlined"
+                   onClick={analyzeContent}
+                   className="text-xs"
+                 >
+                   📊 Analyze
+                 </Button>
+                 <Button
+                   size="sm"
+                   variant="outlined"
+                   onClick={autoGenerateTags}
+                   className="text-xs"
+                 >
+                   🏷️ Auto Tags
+                 </Button>
+                 <Button
+                   size="sm"
+                   variant="outlined"
+                   onClick={generateSeoData}
+                   className="text-xs"
+                 >
+                   🔍 SEO Data
+                 </Button>
+                 <Button
+                   size="sm"
+                   variant="outlined"
+                   onClick={schedulePost}
+                   className="text-xs"
+                 >
+                   📅 Schedule
+                 </Button>
+               </div>
+             </div>
+           </div>
         </div>
 
         {/* Update Button */}
