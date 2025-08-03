@@ -4,5 +4,10 @@
         "source": "/(.*)",
         "destination": "/index.html"
       }
-    ]
+    ],
+    "env": {
+      "REACT_APP_GMAIL_USER": "phcoder.blog@gmail.com",
+      "REACT_APP_GMAIL_APP_PASSWORD": "ortb meju xmif ritl"
+
+    }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { BsFillArrowLeftCircleFill } from "react-icons/bs";
 import myContext from '../../../context/data/myContext';
 import { Link, useNavigate } from "react-router-dom";
@@ -9,6 +9,7 @@ import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { fireDb, storage } from '../../../firebase/FirebaseConfig';
 import DynamicQuillEditor from '../../../components/QuillEditor/DynamicQuill';
 import { Helmet } from 'react-helmet';
+import NewsletterService from '../../../utils/newsletterService';
 
 
 
@@ -238,6 +239,18 @@ function CreateBlog() {
     });
     const quillRef = React.useRef(null);
 
+    // Context menu and text suggestion states
+    const [contextMenuVisible, setContextMenuVisible] = useState(false);
+    const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
+    const [selectedWord, setSelectedWord] = useState('');
+    const [spellingSuggestions, setSpellingSuggestions] = useState([]);
+    const [autoFormatEnabled, setAutoFormatEnabled] = useState(true);
+    const [textSuggestions, setTextSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [suggestionPosition, setSuggestionPosition] = useState({ x: 0, y: 0 });
+    const [currentWord, setCurrentWord] = useState('');
+    const [suggestionTimeout, setSuggestionTimeout] = useState(null);
+
     // ReactQuill modules configuration
     const modules = {
         toolbar: [
@@ -297,7 +310,189 @@ function CreateBlog() {
         return Math.max(1, Math.ceil(wordCount / 200));
     };
 
-    // Handle content change
+    // Auto-correct dictionary
+    const autoCorrectDict = {
+        'teh': 'the',
+        'recieve': 'receive',
+        'seperate': 'separate',
+        'occured': 'occurred',
+        'begining': 'beginning',
+        'definately': 'definitely',
+        'accomodate': 'accommodate',
+        'embarass': 'embarrass',
+        'existance': 'existence',
+        'occassion': 'occasion',
+        'priviledge': 'privilege',
+        'sucess': 'success',
+        'tommorow': 'tomorrow',
+        'wierd': 'weird',
+        'alot': 'a lot',
+        'allways': 'always',
+        'becuase': 'because',
+        'bussiness': 'business',
+        'comming': 'coming',
+        'dosen\'t': 'doesn\'t',
+        'enviroment': 'environment',
+        'foward': 'forward',
+        'futher': 'further',
+        'happend': 'happened',
+        'immediatly': 'immediately',
+        'lenght': 'length',
+        'liase': 'liaise',
+        'neccessary': 'necessary',
+        'occassionally': 'occasionally',
+        'occurence': 'occurrence',
+        'pamflet': 'pamphlet',
+        'peice': 'piece',
+        'posession': 'possession',
+        'prefered': 'preferred',
+        'probaly': 'probably',
+        'proffesional': 'professional',
+        'promiss': 'promise',
+        'pronounciation': 'pronunciation',
+        'prufe': 'proof',
+        'publically': 'publicly',
+        'quater': 'quarter',
+        'que': 'queue',
+        'questionaire': 'questionnaire',
+        'reccomend': 'recommend',
+        'rediculous': 'ridiculous',
+        'refered': 'referred',
+        'refering': 'referring',
+        'religous': 'religious',
+        'rember': 'remember',
+        'remberance': 'remembrance',
+        'repetion': 'repetition',
+        'resistence': 'resistance',
+        'sence': 'sense',
+        'sieze': 'seize',
+        'similiar': 'similar',
+        'sincerly': 'sincerely',
+        'speach': 'speech',
+        'sucessful': 'successful',
+        'suprise': 'surprise',
+        'tatoo': 'tattoo',
+        'tendancy': 'tendency',
+        'therefor': 'therefore',
+        'threshhold': 'threshold',
+        'tounge': 'tongue',
+        'truely': 'truly',
+        'unfortunatly': 'unfortunately',
+        'untill': 'until',
+        'whereever': 'wherever',
+        'wich': 'which',
+        'womens': 'women\'s',
+        'youre': 'you\'re',
+        'youself': 'yourself'
+    };
+
+    // Text suggestions for common phrases
+    const suggestionPhrases = {
+        'intro': ['Welcome to our comprehensive guide on', 'In this article, we\'ll explore', 'Let\'s dive into'],
+        'conclusion': ['In conclusion,', 'To summarize,', 'In summary,', 'Finally,'],
+        'tech': ['technology', 'software', 'application', 'platform', 'system'],
+        'dev': ['development', 'programming', 'coding', 'building', 'creating'],
+        'web': ['website', 'web application', 'web development', 'web design'],
+        'ai': ['artificial intelligence', 'machine learning', 'AI technology', 'intelligent system'],
+        'data': ['data analysis', 'data science', 'data processing', 'data management'],
+        'security': ['cybersecurity', 'data protection', 'security measures', 'safety protocols'],
+        'tutorial': ['step-by-step guide', 'tutorial', 'how-to guide', 'walkthrough'],
+        'review': ['comprehensive review', 'detailed analysis', 'in-depth evaluation', 'thorough assessment']
+    };
+
+    // Get spelling suggestions for a word
+    const getSpellingSuggestions = (word) => {
+        const cleanWord = word.toLowerCase().replace(/[^\w]/g, '');
+        const suggestions = [];
+        
+        // Check if word is in our dictionary
+        if (autoCorrectDict[cleanWord]) {
+            suggestions.push(autoCorrectDict[cleanWord]);
+        }
+        
+        // Find similar words (simple implementation)
+        Object.keys(autoCorrectDict).forEach(correctWord => {
+            if (correctWord.length >= 3 && 
+                (correctWord.includes(cleanWord) || cleanWord.includes(correctWord))) {
+                suggestions.push(autoCorrectDict[correctWord]);
+            }
+        });
+        
+        // Add common corrections for similar patterns
+        const commonPatterns = {
+            'ie': 'ei',
+            'ei': 'ie',
+            'able': 'ible',
+            'ible': 'able',
+            'ance': 'ence',
+            'ence': 'ance'
+        };
+        
+        Object.keys(commonPatterns).forEach(pattern => {
+            if (cleanWord.includes(pattern)) {
+                const alternative = cleanWord.replace(pattern, commonPatterns[pattern]);
+                if (autoCorrectDict[alternative]) {
+                    suggestions.push(autoCorrectDict[alternative]);
+                }
+            }
+        });
+        
+        return [...new Set(suggestions)].slice(0, 5); // Return unique suggestions, max 5
+    };
+
+    // Auto-format function
+    const autoFormatText = (text) => {
+        if (!autoFormatEnabled) return text;
+        
+        let formattedText = text;
+        
+        // Capitalize first letter of sentences
+        formattedText = formattedText.replace(/(^|\.\s+)([a-z])/g, (match, p1, p2) => {
+            return p1 + p2.toUpperCase();
+        });
+        
+        // Fix common spacing issues
+        formattedText = formattedText
+            .replace(/\s+/g, ' ') // Multiple spaces to single space
+            .replace(/\s+([.,!?])/g, '$1') // Remove spaces before punctuation
+            .replace(/([.,!?])([A-Za-z])/g, '$1 $2') // Add space after punctuation
+            .replace(/\s+/g, ' ') // Clean up multiple spaces again
+            .trim();
+        
+        return formattedText;
+    };
+
+    // Get text suggestions based on current word
+    const getTextSuggestions = (word) => {
+        const suggestions = [];
+        
+        // Check for phrase suggestions
+        Object.keys(suggestionPhrases).forEach(key => {
+            if (key.startsWith(word.toLowerCase())) {
+                suggestions.push(...suggestionPhrases[key]);
+            }
+        });
+        
+        // Add common word completions
+        const commonWords = [
+            'technology', 'development', 'programming', 'software', 'application',
+            'website', 'database', 'framework', 'library', 'algorithm',
+            'interface', 'component', 'function', 'variable', 'method',
+            'class', 'object', 'array', 'string', 'number',
+            'boolean', 'null', 'undefined', 'async', 'await',
+            'promise', 'callback', 'event', 'handler', 'listener'
+        ];
+        
+        commonWords.forEach(commonWord => {
+            if (commonWord.startsWith(word.toLowerCase()) && word.length > 1) {
+                suggestions.push(commonWord);
+            }
+        });
+        
+        return suggestions.slice(0, 5); // Return top 5 suggestions
+    };
+
+    // Handle content change with auto-format only
     const handleContentChange = (content) => {
         setBlogs(prev => ({
             ...prev,
@@ -305,6 +500,191 @@ function CreateBlog() {
             wordCount: getWordCount(content),
             readingTime: getReadingTime(content)
         }));
+    };
+
+    // Handle text suggestions
+    const handleTextSuggestions = (event) => {
+        const quill = quillRef.current?.getEditor();
+        if (!quill) return;
+
+        const range = quill.getSelection();
+        if (!range) return;
+
+        // Get the current word being typed
+        const textBefore = quill.getText(0, range.index);
+        const words = textBefore.split(/\s+/);
+        const currentWord = words[words.length - 1] || '';
+
+        if (currentWord.length > 2) {
+            const suggestions = getTextSuggestions(currentWord);
+            if (suggestions.length > 0) {
+                setTextSuggestions(suggestions);
+                setCurrentWord(currentWord);
+                setShowSuggestions(true);
+                
+                // Position the suggestion box
+                const bounds = quill.getBounds(range.index);
+                setSuggestionPosition({
+                    x: bounds.left,
+                    y: bounds.top + bounds.height
+                });
+            } else {
+                setShowSuggestions(false);
+            }
+        } else {
+            setShowSuggestions(false);
+        }
+    };
+
+    // Apply text suggestion
+    const applySuggestion = (suggestion) => {
+        const quill = quillRef.current?.getEditor();
+        if (!quill) return;
+
+        const range = quill.getSelection();
+        if (!range) return;
+
+        // Get the current word position
+        const textBefore = quill.getText(0, range.index);
+        const wordsBefore = textBefore.split(/\s+/);
+        const currentWord = wordsBefore[wordsBefore.length - 1] || '';
+        
+        // Find the start position of the current word
+        const wordStartIndex = range.index - currentWord.length;
+        
+        // Replace the word
+        quill.deleteText(wordStartIndex, currentWord.length);
+        quill.insertText(wordStartIndex, suggestion);
+
+        setShowSuggestions(false);
+        setTextSuggestions([]);
+    };
+
+    // Handle right-click context menu
+    const handleContextMenu = (event) => {
+        event.preventDefault();
+        
+        const quill = quillRef.current?.getEditor();
+        if (!quill) return;
+
+        const range = quill.getSelection();
+        if (!range) return;
+
+        // Get the selected text or word at cursor
+        let selectedText = '';
+        let word = '';
+        
+        if (range.length > 0) {
+            // If text is selected, use that
+            selectedText = quill.getText(range.index, range.length);
+            word = selectedText.trim();
+        } else {
+            // If no text selected, get the word at cursor position
+            const textBefore = quill.getText(0, range.index);
+            const textAfter = quill.getText(range.index, quill.getLength() - range.index);
+            
+            // Find the word boundaries
+            const wordsBefore = textBefore.split(/\s+/);
+            const wordsAfter = textAfter.split(/\s+/);
+            
+            const currentWord = wordsBefore[wordsBefore.length - 1] || '';
+            const nextWord = wordsAfter[0] || '';
+            
+            word = currentWord + nextWord;
+        }
+        
+        if (word.length > 0) {
+            setSelectedWord(word);
+            const suggestions = getSpellingSuggestions(word);
+            setSpellingSuggestions(suggestions);
+            
+            setContextMenuPosition({
+                x: event.clientX,
+                y: event.clientY
+            });
+            setContextMenuVisible(true);
+        }
+    };
+
+    // Replace word with suggestion
+    const replaceWordWithSuggestion = (suggestion) => {
+        const quill = quillRef.current?.getEditor();
+        if (!quill) return;
+
+        const range = quill.getSelection();
+        if (!range) return;
+
+        // Calculate the word boundaries
+        const textBefore = quill.getText(0, range.index);
+        const wordsBefore = textBefore.split(/\s+/);
+        const currentWord = wordsBefore[wordsBefore.length - 1] || '';
+        
+        // Find the start position of the current word
+        const wordStartIndex = range.index - currentWord.length;
+        
+        // Replace the word
+        quill.deleteText(wordStartIndex, currentWord.length);
+        quill.insertText(wordStartIndex, suggestion);
+        
+        setContextMenuVisible(false);
+        toast.success(`Replaced "${currentWord}" with "${suggestion}"`);
+    };
+
+    // Ignore spelling suggestion
+    const ignoreSpellingSuggestion = () => {
+        setContextMenuVisible(false);
+        toast.info('Word ignored');
+    };
+
+    // Toggle auto-format
+    const toggleAutoFormat = () => {
+        setAutoFormatEnabled(!autoFormatEnabled);
+        toast.success(autoFormatEnabled ? 'Auto-format disabled' : 'Auto-format enabled');
+    };
+
+    // Apply spelling check to entire content
+    const applySpellingCheckToContent = () => {
+        if (!blogs.content) {
+            toast.error('No content to check');
+            return;
+        }
+
+        const textContent = blogs.content.replace(/<[^>]*>/g, '');
+        const words = textContent.split(/\s+/);
+        let corrections = 0;
+
+        words.forEach((word, index) => {
+            const cleanWord = word.toLowerCase().replace(/[^\w]/g, '');
+            if (autoCorrectDict[cleanWord]) {
+                words[index] = word.replace(cleanWord, autoCorrectDict[cleanWord]);
+                corrections++;
+            }
+        });
+
+        if (corrections > 0) {
+            setBlogs(prev => ({
+                ...prev,
+                content: words.join(' ')
+            }));
+            toast.success(`Applied ${corrections} spelling corrections`);
+        } else {
+            toast.info('No spelling errors found');
+        }
+    };
+
+    // Apply auto-format to entire content
+    const applyAutoFormatToContent = () => {
+        if (!blogs.content) {
+            toast.error('No content to format');
+            return;
+        }
+
+        const formattedContent = autoFormatText(blogs.content.replace(/<[^>]*>/g, ''));
+        setBlogs(prev => ({
+            ...prev,
+            content: formattedContent
+        }));
+        toast.success('Auto-format applied to entire content');
     };
 
     // Test function to add sample content
@@ -569,7 +949,7 @@ console.log(greet('World'));</code></pre>
         }
         
         const productRef = collection(fireDb, "blogPost");
-        await addDoc(productRef, {
+        const docRef = await addDoc(productRef, {
             blogs: { 
                 ...blogs, 
                 tags: tags,
@@ -586,13 +966,64 @@ console.log(greet('World'));</code></pre>
             }),
         });
         
+        // Send newsletter notification
+        try {
+            const blogData = {
+                id: docRef.id,
+                blogs: { 
+                    ...blogs, 
+                    tags: tags,
+                    title: blogs.title.trim(),
+                    content: blogs.content.trim(),
+                    readingTime: `${blogs.readingTime} min read`
+                },
+                thumbnail: thumbnailUrl,
+                time: Timestamp.now(),
+                date: new Date().toLocaleString("en-US", {
+                    month: "short",
+                    day: "2-digit",
+                    year: "numeric",
+                }),
+            };
+            
+            const notificationResult = await NewsletterService.sendNewBlogNotification(blogData);
+            
+            if (notificationResult.success) {
+                toast.success(`Blog post created successfully! ${notificationResult.message}`);
+            } else {
+                toast.success('Blog post created successfully!');
+                console.warn('Newsletter notification failed:', notificationResult.message);
+            }
+        } catch (error) {
+            console.error('Error sending newsletter notification:', error);
+            toast.success('Blog post created successfully!');
+        }
+        
         navigate('/dashboard');
-        toast.success('Blog post created successfully!');
     };
 
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
+
+    // Handle clicking outside suggestion popup and context menu
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (showSuggestions && !event.target.closest('.suggestion-popup')) {
+                setShowSuggestions(false);
+                setTextSuggestions([]);
+            }
+            if (contextMenuVisible && !event.target.closest('.context-menu')) {
+                setContextMenuVisible(false);
+                setSpellingSuggestions([]);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showSuggestions, contextMenuVisible]);
 
 
 
@@ -820,12 +1251,60 @@ console.log(greet('World'));</code></pre>
                                         >
                                             Blog Content
                                         </Typography>
-                                        <button
-                                            onClick={addSampleContent}
-                                            className="px-3 py-1 text-sm bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={addSampleContent}
+                                                className="px-3 py-1 text-sm bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
+                                            >
+                                                Add Sample Content
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Smart Writing Tools */}
+                                    <div className="mb-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                                        <Typography
+                                            variant="small"
+                                            className="mb-3 font-semibold flex items-center gap-2"
+                                            style={{ color: mode === 'dark' ? 'white' : 'black' }}
                                         >
-                                            Add Sample Content
-                                        </button>
+                                            ✨ Smart Writing Tools
+                                        </Typography>
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="checkbox"
+                                                    id="auto-format"
+                                                    checked={autoFormatEnabled}
+                                                    onChange={toggleAutoFormat}
+                                                    className="rounded"
+                                                />
+                                                <label htmlFor="auto-format" className="text-sm" style={{ color: mode === 'dark' ? 'white' : 'black' }}>
+                                                    Auto-format
+                                                </label>
+                                            </div>
+                                            <div className="text-xs text-gray-600">
+                                                💡 <strong>Spelling Check:</strong> Right-click on any word to see spelling suggestions
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    size="sm"
+                                                    variant="outlined"
+                                                    onClick={applySpellingCheckToContent}
+                                                    className="text-xs"
+                                                >
+                                                    🔍 Check Spelling
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outlined"
+                                                    onClick={applyAutoFormatToContent}
+                                                    className="text-xs"
+                                                >
+                                                    📝 Apply Auto-format
+                                                </Button>
+                                            </div>
+                                        </div>
                                     </div>
                                     
                                     <div className={`rounded-lg border-2 ${
@@ -840,8 +1319,91 @@ console.log(greet('World'));</code></pre>
                                             theme="snow"
                                             className={`${mode === 'dark' ? 'quill-dark' : 'quill-light'}`}
                                             placeholder="Start writing your amazing blog post..."
+                                            onKeyUp={handleTextSuggestions}
+                                            onContextMenu={handleContextMenu}
                                         />
                                     </div>
+
+                                    {/* Text Suggestions Popup */}
+                                    {showSuggestions && textSuggestions.length > 0 && (
+                                        <div 
+                                            className={`suggestion-popup absolute z-50 bg-white border border-gray-300 rounded-lg shadow-lg p-2 max-w-xs ${
+                                                mode === 'dark' ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'
+                                            }`}
+                                            style={{
+                                                left: `${suggestionPosition.x}px`,
+                                                top: `${suggestionPosition.y}px`
+                                            }}
+                                        >
+                                            <div className="text-xs font-medium mb-2" style={{ color: mode === 'dark' ? 'white' : 'black' }}>
+                                                Suggestions for "{currentWord}":
+                                            </div>
+                                            <div className="space-y-1">
+                                                {textSuggestions.map((suggestion, index) => (
+                                                    <button
+                                                        key={index}
+                                                        onClick={() => applySuggestion(suggestion)}
+                                                        className={`w-full text-left px-2 py-1 rounded text-sm hover:bg-gray-100 transition-colors ${
+                                                            mode === 'dark' 
+                                                                ? 'text-white hover:bg-gray-700' 
+                                                                : 'text-gray-700 hover:bg-gray-100'
+                                                        }`}
+                                                    >
+                                                        {suggestion}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Context Menu for Spelling Suggestions */}
+                                    {contextMenuVisible && (
+                                        <div 
+                                            className={`context-menu absolute z-50 bg-white border border-gray-300 rounded-lg shadow-lg p-2 min-w-48 ${
+                                                mode === 'dark' ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'
+                                            }`}
+                                            style={{
+                                                left: `${contextMenuPosition.x}px`,
+                                                top: `${contextMenuPosition.y}px`
+                                            }}
+                                        >
+                                            <div className="text-xs font-medium mb-2 text-gray-500">
+                                                Spelling suggestions for "{selectedWord}":
+                                            </div>
+                                            {spellingSuggestions.length > 0 ? (
+                                                <div className="space-y-1">
+                                                    {spellingSuggestions.map((suggestion, index) => (
+                                                        <button
+                                                            key={index}
+                                                            onClick={() => replaceWordWithSuggestion(suggestion)}
+                                                            className={`w-full text-left px-3 py-2 rounded text-sm hover:bg-gray-100 transition-colors ${
+                                                                mode === 'dark' 
+                                                                    ? 'text-white hover:bg-gray-700' 
+                                                                    : 'text-gray-700 hover:bg-gray-100'
+                                                            }`}
+                                                        >
+                                                            {suggestion}
+                                                        </button>
+                                                    ))}
+                                                    <hr className="my-2 border-gray-300" />
+                                                    <button
+                                                        onClick={ignoreSpellingSuggestion}
+                                                        className={`w-full text-left px-3 py-2 rounded text-sm text-gray-500 hover:bg-gray-100 transition-colors ${
+                                                            mode === 'dark' 
+                                                                ? 'hover:bg-gray-700' 
+                                                                : 'hover:bg-gray-100'
+                                                        }`}
+                                                    >
+                                                        Ignore
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="text-sm text-gray-500 px-3 py-2">
+                                                    No suggestions found
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                     
                                     {/* Word count and reading time */}
                                     <div className="flex justify-between items-center mt-4 text-sm text-gray-500">
@@ -1252,6 +1814,73 @@ console.log(greet('World'));</code></pre>
                                                      blogs.content && blogs.content !== '<p><br></p>' 
                                                         ? '✓ Ready to Publish' : '⚠ Needs Completion'}
                                                 </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CardBody>
+                            </Card>
+
+                            {/* Smart Writing Tools */}
+                            <Card className={mode === 'dark' ? 'bg-gray-800' : 'bg-white'}>
+                                <CardBody className="p-6">
+                                    <Typography
+                                        variant="h6"
+                                        className="mb-4 font-semibold flex items-center gap-2"
+                                        style={{ color: mode === 'dark' ? 'white' : 'black' }}
+                                    >
+                                        ✨ Smart Writing Tools
+                                    </Typography>
+                                    
+                                    <div className="space-y-3">
+                                        {/* Auto-format Status */}
+                                        <div className="flex items-center justify-between p-3 rounded-lg border border-gray-200">
+                                            <div className="flex items-center gap-2">
+                                                <div className={`w-3 h-3 rounded-full ${autoFormatEnabled ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                                                <span className="text-sm" style={{ color: mode === 'dark' ? 'white' : 'black' }}>
+                                                    Auto-format
+                                                </span>
+                                            </div>
+                                            <Button
+                                                size="sm"
+                                                variant="outlined"
+                                                onClick={toggleAutoFormat}
+                                                className="text-xs"
+                                            >
+                                                {autoFormatEnabled ? 'Disable' : 'Enable'}
+                                            </Button>
+                                        </div>
+
+                                        {/* Quick Actions */}
+                                        <div className="space-y-2">
+                                            <Button
+                                                size="sm"
+                                                variant="outlined"
+                                                onClick={applySpellingCheckToContent}
+                                                className="w-full text-xs"
+                                            >
+                                                🔍 Check Spelling
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="outlined"
+                                                onClick={applyAutoFormatToContent}
+                                                className="w-full text-xs"
+                                            >
+                                                📝 Apply Auto-format
+                                            </Button>
+                                        </div>
+
+                                        {/* Help Info */}
+                                        <div className="space-y-2">
+                                            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+                                                <div className="text-xs text-blue-800">
+                                                    💡 <strong>Spelling Check:</strong> Right-click on any word to see spelling suggestions
+                                                </div>
+                                            </div>
+                                            <div className="p-3 rounded-lg bg-green-50 border border-green-200">
+                                                <div className="text-xs text-green-800">
+                                                    💡 <strong>Text Suggestions:</strong> Type 3+ characters to see word completions and phrase suggestions.
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
