@@ -22,7 +22,10 @@ export const generateBlogSEOTags = (blog, currentUrl) => {
   const author = blog?.author || 'Pankaj Hadole';
   const category = blog?.category || 'Technology';
   const title = blog?.title || 'Blog Post';
-  const thumbnail = blog?.thumbnail || 'https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png';
+  
+  // Use a better default thumbnail for blog posts
+  const defaultThumbnail = 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80';
+  const thumbnail = blog?.thumbnail || defaultThumbnail;
 
   return {
     // Basic Meta Tags
@@ -483,21 +486,34 @@ export const generateShareUrl = (platform, shareData) => {
  * @returns {Object} Optimized image object
  */
 export const optimizeThumbnail = (imageUrl, width = 1200, height = 630) => {
-  // Check if image URL is valid
-  if (!imageUrl || imageUrl === '') {
+  // Check if image URL is valid and not empty
+  if (!imageUrl || imageUrl === '' || imageUrl === null || imageUrl === undefined) {
+    // Return a more appropriate default image that represents the blog
     return {
-      url: 'https://phcoder05.vercel.app/static/media/Black_and_White_Circle_Typographic_Logo-removebg-preview.cc90989a7e3ba16370d0.png',
+      url: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
       width: width,
       height: height,
-      alt: 'PHcoder05 Blog'
+      alt: 'Blog Post Thumbnail'
     };
   }
 
+  // If the image URL is a relative path, make it absolute
+  let processedUrl = imageUrl;
+  if (imageUrl.startsWith('/') || !imageUrl.startsWith('http')) {
+    // If it's a relative path, try to make it absolute
+    if (imageUrl.startsWith('/')) {
+      processedUrl = `${window.location.origin}${imageUrl}`;
+    } else if (!imageUrl.startsWith('http')) {
+      // If it's not a full URL, assume it's a relative path
+      processedUrl = `${window.location.origin}/${imageUrl}`;
+    }
+  }
+
   return {
-    url: imageUrl,
+    url: processedUrl,
     width: width,
     height: height,
-    alt: 'Blog Thumbnail'
+    alt: 'Blog Post Thumbnail'
   };
 };
 

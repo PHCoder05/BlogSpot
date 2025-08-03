@@ -32,17 +32,42 @@ export default function ShareDialogBox({ title, url, description, image, hashtag
     const context = useContext(myContext);
     const { mode } = context;
 
-    // Debug: Log component rendering
-    console.log('ShareDialogBox rendering, mode:', mode, 'title:', title);
+    // Debug: Log component rendering and image data
+    console.log('ShareDialogBox rendering, mode:', mode, 'title:', title, 'image:', image);
 
     // Get current page URL and title with proper SEO optimization
     const currentUrl = url || window.location.href;
     const currentTitle = title || document.title || 'PHcoder05 Blog';
     const currentDescription = description || 'Check out this amazing blog post!';
     
+    // Create a better fallback image based on the blog content
+    const getFallbackImage = () => {
+      // Use different images based on the blog title or category
+      const blogTitle = title?.toLowerCase() || '';
+      const blogDescription = description?.toLowerCase() || '';
+      
+      if (blogTitle.includes('programming') || blogDescription.includes('code') || blogDescription.includes('programming')) {
+        return 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80';
+      } else if (blogTitle.includes('cloud') || blogDescription.includes('cloud') || blogDescription.includes('aws') || blogDescription.includes('azure')) {
+        return 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80';
+      } else if (blogTitle.includes('devops') || blogDescription.includes('devops') || blogDescription.includes('deployment')) {
+        return 'https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80';
+      } else {
+        // Default tech blog image
+        return 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80';
+      }
+    };
+    
     // Optimize image for social sharing
-    const optimizedImage = optimizeThumbnail(image);
+    const optimizedImage = optimizeThumbnail(image || getFallbackImage());
     const currentImage = optimizedImage.url;
+    
+    // Debug: Log optimized image
+    console.log('Optimized image:', optimizedImage);
+    
+    // Additional debugging for image handling
+    console.log('Original image prop:', image);
+    console.log('Current image URL:', currentImage);
     
     // Generate optimized hashtags
     const optimizedHashtags = generateHashtags(hashtags);

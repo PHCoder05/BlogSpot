@@ -111,6 +111,8 @@ function BlogInfo() {
       const productTemp = await getDoc(doc(fireDb, "blogPost", params.id));
       if (productTemp.exists()) {
         const blogData = productTemp.data();
+        console.log('Blog data fetched:', blogData);
+        console.log('Blog thumbnail:', blogData.thumbnail);
         setGetBlogs(blogData);
         setUpdatedTitle(blogData.blogs.title);
         setUpdatedContent(blogData.blogs.content);
@@ -396,6 +398,10 @@ function BlogInfo() {
     date: getBlogs.date || '',
     author: 'Pankaj Hadole'
   } : null;
+  
+  // Debug: Log safe blog object
+  console.log('Safe blog object:', safeBlog);
+  console.log('Safe blog thumbnail:', safeBlog?.thumbnail);
 
   return (
     <Layout>
