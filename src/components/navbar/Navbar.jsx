@@ -56,6 +56,9 @@ export default function Nav() {
                 <Link to={'/allblogs'} className={`hover:text-teal-300 ${location.pathname === '/allblogs' ? 'text-teal-300' : ''}`}>All Articles</Link>
             </Typography>
             <Typography as="li" variant="small" className="p-1 font-normal" style={{ color: mode === 'dark' ? 'white' : 'white' }}>
+                <Link to={'/personal-blogs'} className={`hover:text-teal-300 ${location.pathname === '/personal-blogs' ? 'text-teal-300' : ''}`}>Personal Thoughts</Link>
+            </Typography>
+            <Typography as="li" variant="small" className="p-1 font-normal" style={{ color: mode === 'dark' ? 'white' : 'white' }}>
                 <Link to={'/about'} className={`hover:text-teal-300 ${location.pathname === '/about' ? 'text-teal-300' : ''}`}>About</Link>
             </Typography>
             {user?.email === "pankajhadole4@gmail.com" &&
@@ -173,6 +176,15 @@ export default function Nav() {
                                             onClick={() => setOpenNav(false)}
                                         >
                                             All Articles
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link 
+                                            to={'/personal-blogs'} 
+                                            className={`block py-3 px-4 rounded-lg transition-all duration-200 ${location.pathname === '/personal-blogs' ? 'bg-teal-500 text-white' : 'text-white hover:bg-white hover:bg-opacity-10'}`}
+                                            onClick={() => setOpenNav(false)}
+                                        >
+                                            Personal Thoughts
                                         </Link>
                                     </li>
                                     <li>

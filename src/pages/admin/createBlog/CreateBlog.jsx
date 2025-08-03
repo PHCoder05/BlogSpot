@@ -1,5 +1,6 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import { BsFillArrowLeftCircleFill } from "react-icons/bs";
+import { FaKey } from "react-icons/fa";
 import myContext from '../../../context/data/myContext';
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Typography, Card, CardBody } from "@material-tailwind/react";
@@ -202,7 +203,8 @@ function CreateBlog() {
         imageUrl: '',
         tags: [],
         wordCount: 0,
-        readingTime: 0
+        readingTime: 0,
+        isPersonal: false
     });
 
     const [tagInput, setTagInput] = useState('');
@@ -952,7 +954,8 @@ console.log(greet('World'));</code></pre>
                 tags: tags,
                 title: blogs.title.trim(),
                 content: blogs.content.trim(),
-                readingTime: `${blogs.readingTime} min read`
+                readingTime: `${blogs.readingTime} min read`,
+                isPersonal: blogs.isPersonal
             },
             thumbnail: thumbnailUrl,
             time: Timestamp.now(),
@@ -961,6 +964,7 @@ console.log(greet('World'));</code></pre>
                 day: "2-digit",
                 year: "numeric",
             }),
+            isPersonal: blogs.isPersonal
         });
         
         // Send newsletter notification
@@ -1702,6 +1706,30 @@ console.log(greet('World'));</code></pre>
                                         <option value="Personal">Personal</option>
                                         <option value="Other">Other</option>
                                     </select>
+                                    
+                                    {/* Personal Blog Toggle */}
+                                    <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <FaKey className="w-4 h-4 text-teal-500" />
+                                                <span className="text-sm font-medium" style={{ color: mode === 'dark' ? 'white' : 'black' }}>
+                                                    Personal Blog (Access Code Protected)
+                                                </span>
+                                            </div>
+                                            <label className="relative inline-flex items-center cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={blogs.isPersonal}
+                                                    onChange={(e) => setBlogs({ ...blogs, isPersonal: e.target.checked })}
+                                                    className="sr-only peer"
+                                                />
+                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-500"></div>
+                                            </label>
+                                        </div>
+                                        <p className="text-xs text-gray-600 mt-2">
+                                            Personal blogs are only accessible with an access code and won't appear in the public blog list.
+                                        </p>
+                                    </div>
                                 </CardBody>
                             </Card>
 

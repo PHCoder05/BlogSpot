@@ -94,6 +94,11 @@ function AllBlogs() {
     const filteredAndSortedBlogs = useMemo(() => {
         let filtered = blogs;
 
+        // Filter out personal blogs from public view
+        filtered = filtered.filter(blog => 
+            !blog.blogs?.isPersonal && !blog.isPersonal
+        );
+
         // Filter by search term
         if (searchTerm) {
             filtered = filtered.filter(blog => 

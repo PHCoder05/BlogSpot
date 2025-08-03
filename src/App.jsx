@@ -7,6 +7,7 @@ import {
 import Home from "./pages/home/Home";
 import Blog from "./pages/blog/Blog";
 import AllBlogs from "./pages/allBlogs/AllBlogs";
+import PersonalBlogs from "./pages/personalBlogs/PersonalBlogs";
 import NoPage from "./pages/nopage/NoPage";
 import BlogInfo from "./pages/blogInfo/BlogInfo";
 import AdminLogin from "./pages/admin/adminLogin/AdminLogin";
@@ -15,6 +16,7 @@ import MyState from "./context/data/myState";
 import { Toaster } from "react-hot-toast";
 import CreateBlog from "./pages/admin/createBlog/CreateBlog";
 import EditBlog from "./pages/admin/editBlog/Editblog";
+import AccessCodeManager from "./pages/admin/accessCodes/AccessCodeManager";
 import AboutPage from './components/aboutPage/AboutPage';
 import ScrollToTop from './components/scrollToTop/ScrollToTop';
 import ProgressBar from './components/progressBar/ProgressBar';
@@ -52,6 +54,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/allblogs" element={<AllBlogs />} />
+          <Route path="/personal-blogs" element={<PersonalBlogs />} />
           <Route path="/bloginfo/:id" element={<BlogInfo />} />
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/about" element={<AboutPage />} />
@@ -82,6 +85,14 @@ function App() {
             element={
               <ProtectedRouteForAdmin>
                 <EditBlog />
+              </ProtectedRouteForAdmin>
+            }
+          />
+          <Route
+            path="/access-codes"
+            element={
+              <ProtectedRouteForAdmin>
+                <AccessCodeManager />
               </ProtectedRouteForAdmin>
             }
           />

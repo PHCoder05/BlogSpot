@@ -7,7 +7,8 @@ import {
   FaPlus, FaSignOutAlt, FaSearch, FaFilter, FaEye, FaEdit, FaTrash, 
   FaChartBar, FaNewspaper, FaCalendarAlt, FaClock, FaTags, FaFolder,
   FaSort, FaSortUp, FaSortDown, FaThumbsUp, FaEyeSlash, FaDownload,
-  FaCog, FaBell, FaUser, FaEnvelope, FaGlobe, FaRocket, FaFire, FaImage
+  FaCog, FaBell, FaUser, FaEnvelope, FaGlobe, FaRocket, FaFire, FaImage,
+  FaKey
 } from 'react-icons/fa';
 import SEOComponent from '../../../components/SEOComponent';
 import toast from 'react-hot-toast';
@@ -199,6 +200,15 @@ function Dashboard() {
                         New Post
                       </Button>
                     </Link>
+                    <Link to="/access-codes">
+                      <Button
+                        className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                        size="sm"
+                      >
+                        <FaKey />
+                        Access Codes
+                      </Button>
+                    </Link>
                     <Button
                       variant="outlined"
                       size="sm"
@@ -221,7 +231,7 @@ function Dashboard() {
                   <CardBody className="p-6 relative">
                     <div className="flex items-center justify-between">
                       <div className="space-y-2">
-                        <Typography variant="h6" className={`${mode === 'dark' ? 'text-gray-300' : 'text-gray-600'} font-medium`}>
+                        <Typography variant="h6" className={`${mode === 'dark' ? 'text-gray-200' : 'text-gray-600'} font-medium`}>
                           Total Posts
                         </Typography>
                         <Typography variant="h3" className="font-bold bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent">
@@ -244,7 +254,7 @@ function Dashboard() {
                   <CardBody className="p-6 relative">
                     <div className="flex items-center justify-between">
                       <div className="space-y-2">
-                        <Typography variant="h6" className={`${mode === 'dark' ? 'text-gray-300' : 'text-gray-600'} font-medium`}>
+                        <Typography variant="h6" className={`${mode === 'dark' ? 'text-gray-200' : 'text-gray-600'} font-medium`}>
                           This Month
                         </Typography>
                         <Typography variant="h3" className="font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -267,7 +277,7 @@ function Dashboard() {
                   <CardBody className="p-6 relative">
                     <div className="flex items-center justify-between">
                       <div className="space-y-2">
-                        <Typography variant="h6" className={`${mode === 'dark' ? 'text-gray-300' : 'text-gray-600'} font-medium`}>
+                        <Typography variant="h6" className={`${mode === 'dark' ? 'text-gray-200' : 'text-gray-600'} font-medium`}>
                           Total Views
                         </Typography>
                         <Typography variant="h3" className="font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
@@ -290,7 +300,7 @@ function Dashboard() {
                   <CardBody className="p-6 relative">
                     <div className="flex items-center justify-between">
                       <div className="space-y-2">
-                        <Typography variant="h6" className={`${mode === 'dark' ? 'text-gray-300' : 'text-gray-600'} font-medium`}>
+                        <Typography variant="h6" className={`${mode === 'dark' ? 'text-gray-200' : 'text-gray-600'} font-medium`}>
                           Avg Read Time
                         </Typography>
                         <Typography variant="h3" className="font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
@@ -471,37 +481,37 @@ function Dashboard() {
                               <span className="text-xs text-gray-500">Select All</span>
                             </div>
                           </th>
-                          <th className="p-6 text-left font-semibold text-gray-700 dark:text-gray-300">
+                          <th className="p-6 text-left font-semibold text-gray-700 dark:text-gray-200">
                             <div className="flex items-center gap-2">
                               <FaImage className="text-teal-500" />
                               Thumbnail
                             </div>
                           </th>
-                          <th className="p-6 text-left font-semibold text-gray-700 dark:text-gray-300">
+                          <th className="p-6 text-left font-semibold text-gray-700 dark:text-gray-200">
                             <div className="flex items-center gap-2">
                               <FaNewspaper className="text-blue-500" />
                               Title
                             </div>
                           </th>
-                          <th className="p-6 text-left font-semibold text-gray-700 dark:text-gray-300">
+                          <th className="p-6 text-left font-semibold text-gray-700 dark:text-gray-200">
                             <div className="flex items-center gap-2">
                               <FaFolder className="text-purple-500" />
                               Category
                             </div>
                           </th>
-                          <th className="p-6 text-left font-semibold text-gray-700 dark:text-gray-300">
+                          <th className="p-6 text-left font-semibold text-gray-700 dark:text-gray-200">
                             <div className="flex items-center gap-2">
                               <FaCalendarAlt className="text-orange-500" />
                               Date
                             </div>
                           </th>
-                          <th className="p-6 text-left font-semibold text-gray-700 dark:text-gray-300">
+                          <th className="p-6 text-left font-semibold text-gray-700 dark:text-gray-200">
                             <div className="flex items-center gap-2">
                               <FaChartBar className="text-green-500" />
                               Stats
                             </div>
                           </th>
-                          <th className="p-6 text-left font-semibold text-gray-700 dark:text-gray-300">
+                          <th className="p-6 text-left font-semibold text-gray-700 dark:text-gray-200">
                             <div className="flex items-center gap-2">
                               <FaCog className="text-gray-500" />
                               Actions
@@ -528,7 +538,7 @@ function Dashboard() {
                                     onChange={(e) => handleSelectBlog(item.id, e.target.checked)}
                                     className="rounded border-gray-300 focus:ring-teal-500 focus:ring-2 w-4 h-4"
                                   />
-                                  <span className="text-xs text-gray-500 font-medium">#{index + 1}</span>
+                                  <span className={`text-xs font-medium ${mode === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>#{index + 1}</span>
                                 </div>
                               </td>
                               <td className="p-6">
@@ -562,19 +572,31 @@ function Dashboard() {
                               </td>
                               <td className="p-6">
                                 <div className="space-y-2">
-                                  <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-teal-100 to-blue-100 text-teal-800 border border-teal-200`}>
+                                  <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${
+                                    mode === 'dark' 
+                                      ? 'bg-gradient-to-r from-teal-900/50 to-blue-900/50 text-teal-200 border border-teal-700' 
+                                      : 'bg-gradient-to-r from-teal-100 to-blue-100 text-teal-800 border border-teal-200'
+                                  }`}>
                                     <FaFolder className="text-xs" />
                                     {item.blogs.category}
                                   </span>
                                   {item.blogs.categories && item.blogs.categories.length > 0 && (
                                     <div className="flex flex-wrap gap-1">
                                       {item.blogs.categories.slice(0, 2).map((cat, idx) => (
-                                        <span key={idx} className="px-2 py-1 rounded-md text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                                        <span key={idx} className={`px-2 py-1 rounded-md text-xs ${
+                                          mode === 'dark' 
+                                            ? 'bg-gray-700 text-gray-200' 
+                                            : 'bg-gray-100 text-gray-600'
+                                        }`}>
                                           {cat}
                                         </span>
                                       ))}
                                       {item.blogs.categories.length > 2 && (
-                                        <span className="px-2 py-1 rounded-md text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                                        <span className={`px-2 py-1 rounded-md text-xs ${
+                                          mode === 'dark' 
+                                            ? 'bg-gray-700 text-gray-200' 
+                                            : 'bg-gray-100 text-gray-600'
+                                        }`}>
                                           +{item.blogs.categories.length - 2} more
                                         </span>
                                       )}
@@ -588,20 +610,28 @@ function Dashboard() {
                                     <FaCalendarAlt className="text-orange-600 dark:text-orange-400 text-sm" />
                                   </div>
                                   <div>
-                                    <div className="font-medium text-gray-800 dark:text-white">{item.date}</div>
-                                    <div className="text-xs text-gray-500">Published</div>
+                                    <div className={`font-medium ${mode === 'dark' ? 'text-white' : 'text-gray-800'}`}>{item.date}</div>
+                                    <div className={`text-xs ${mode === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Published</div>
                                   </div>
                                 </div>
                               </td>
                               <td className="p-6">
                                 <div className="space-y-2">
                                   <div className="flex items-center gap-4 text-sm">
-                                    <div className="flex items-center gap-2 p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                                      <FaEye className="text-blue-600 dark:text-blue-400" />
+                                    <div className={`flex items-center gap-2 p-2 rounded-lg ${
+                                      mode === 'dark' 
+                                        ? 'bg-blue-900/30 text-blue-300' 
+                                        : 'bg-blue-100 text-blue-600'
+                                    }`}>
+                                      <FaEye className={mode === 'dark' ? 'text-blue-300' : 'text-blue-600'} />
                                       <span className="font-medium">{item.blogs.views || 0}</span>
                                     </div>
-                                    <div className="flex items-center gap-2 p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                                      <FaThumbsUp className="text-green-600 dark:text-green-400" />
+                                    <div className={`flex items-center gap-2 p-2 rounded-lg ${
+                                      mode === 'dark' 
+                                        ? 'bg-green-900/30 text-green-300' 
+                                        : 'bg-green-100 text-green-600'
+                                    }`}>
+                                      <FaThumbsUp className={mode === 'dark' ? 'text-green-300' : 'text-green-600'} />
                                       <span className="font-medium">{item.blogs.likes || 0}</span>
                                     </div>
                                   </div>
@@ -647,10 +677,10 @@ function Dashboard() {
                             <td colSpan="7" className="p-8 text-center">
                               <div className="flex flex-col items-center gap-4">
                                 <FaNewspaper className="text-6xl text-gray-400" />
-                                <Typography variant="h6" className={`${mode === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                                <Typography variant="h6" className={`${mode === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                                   No blogs found
                                 </Typography>
-                                <Typography variant="small" className={`${mode === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>
+                                <Typography variant="small" className={`${mode === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                                   {searchTerm || selectedCategory !== 'all' ? 'Try adjusting your search or filters' : 'Create your first blog post to get started'}
                                 </Typography>
                                 {!searchTerm && selectedCategory === 'all' && (
@@ -755,10 +785,10 @@ function Dashboard() {
                       <CardBody className="p-8 text-center">
                         <div className="flex flex-col items-center gap-4">
                           <FaNewspaper className="text-6xl text-gray-400" />
-                          <Typography variant="h6" className={`${mode === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                          <Typography variant="h6" className={`${mode === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                             No blogs found
                           </Typography>
-                          <Typography variant="small" className={`${mode === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>
+                          <Typography variant="small" className={`${mode === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                             {searchTerm || selectedCategory !== 'all' ? 'Try adjusting your search or filters' : 'Create your first blog post to get started'}
                           </Typography>
                           {!searchTerm && selectedCategory === 'all' && (
@@ -780,9 +810,9 @@ function Dashboard() {
             {/* Results Summary */}
             {filteredAndSortedBlogs.length > 0 && (
               <div className="mt-6 text-center">
-                <Typography variant="small" className={`${mode === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Showing {filteredAndSortedBlogs.length} of {getAllBlog.length} blog posts
-                </Typography>
+                                      <Typography variant="small" className={`${mode === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+                        Showing {filteredAndSortedBlogs.length} of {getAllBlog.length} blog posts
+                      </Typography>
               </div>
             )}
           </div>
