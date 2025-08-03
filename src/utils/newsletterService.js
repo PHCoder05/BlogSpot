@@ -187,11 +187,14 @@ export class NewsletterService {
       // Store notification record
       await addDoc(collection(fireDb, NOTIFICATIONS_COLLECTION), notificationData);
 
-      // In a real application, you would integrate with an email service here
-      // For now, we'll simulate the email sending process
-      const emailPromises = subscribers.map(subscriber => 
-        this.sendEmailNotification(subscriber.email, blogData)
-      );
+      // Send emails to each subscriber with their email for unsubscribe links
+      const emailPromises = subscribers.map(subscriber => {
+        const blogDataWithEmail = {
+          ...blogData,
+          subscriberEmail: subscriber.email
+        };
+        return this.sendEmailNotification(subscriber.email, blogDataWithEmail);
+      });
 
       await Promise.all(emailPromises);
 

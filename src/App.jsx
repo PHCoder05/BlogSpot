@@ -20,6 +20,8 @@ import ScrollToTop from './components/scrollToTop/ScrollToTop';
 import ProgressBar from './components/progressBar/ProgressBar';
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
+import Unsubscribe from "./pages/Unsubscribe";
+import EmailTest from "./components/EmailTest";
 
 import React, { useEffect } from "react";
 import { suppressQuillWarnings } from "./utils/quillWarningSuppression";
@@ -55,6 +57,8 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/unsubscribe" element={<Unsubscribe />} />
+          <Route path="/email-test" element={<EmailTest />} />
 
           <Route
             path="/dashboard"

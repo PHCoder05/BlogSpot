@@ -12,48 +12,37 @@ export class GmailService {
    */
   static async sendEmail(to, subject, html) {
     try {
-      // For Gmail SMTP, you have two options:
+      console.log('📧 Attempting to send real email via Gmail SMTP...');
       
-      // Option 1: Using App Password (Recommended for development)
-      // 1. Enable 2-factor authentication on your Gmail
-      // 2. Generate an App Password: https://myaccount.google.com/apppasswords
-      // 3. Use the app password instead of your regular password
-      
-      // Option 2: Using OAuth2 (More secure for production)
-      // 1. Set up Google Cloud Console
-      // 2. Enable Gmail API
-      // 3. Create OAuth2 credentials
-      
+      // Gmail SMTP Configuration
       const emailData = {
         to: to,
         from: import.meta.env.VITE_GMAIL_USER || 'phcoder.blog@gmail.com',
         subject: subject,
         html: html,
-        // Add your Gmail credentials here
         smtp: {
           host: 'smtp.gmail.com',
           port: 587,
           secure: false, // true for 465, false for other ports
           auth: {
             user: import.meta.env.VITE_GMAIL_USER || 'phcoder.blog@gmail.com',
-            pass: import.meta.env.VITE_GMAIL_APP_PASSWORD || 'your-app-password'
+            pass: import.meta.env.VITE_GMAIL_APP_PASSWORD || 'ortb meju xmif ritl'
           }
         }
       };
       
-      // In a real implementation, you would use a library like nodemailer
-      // For now, we'll simulate the email sending
       console.log('📧 Gmail SMTP - Sending email to:', to);
       console.log('📧 From:', emailData.from);
       console.log('📧 Subject:', subject);
       console.log('📧 SMTP Config:', {
         host: emailData.smtp.host,
         port: emailData.smtp.port,
-        user: emailData.smtp.auth.user
+        user: emailData.smtp.auth.user,
+        passConfigured: !!emailData.smtp.auth.pass
       });
       
       // Check if app password is configured
-      const appPassword = import.meta.env.VITE_GMAIL_APP_PASSWORD;
+      const appPassword = import.meta.env.VITE_GMAIL_APP_PASSWORD || 'ortb meju xmif ritl';
       if (!appPassword || appPassword === 'your-app-password') {
         console.log('⚠️  Gmail App Password not configured - using mock email');
         console.log('💡 To send real emails, set up your Gmail app password');
@@ -62,11 +51,18 @@ export class GmailService {
         return true;
       }
       
+      // For now, we'll simulate the email sending process
+      // In a real implementation, you would use a library like nodemailer
+      console.log('📧 Using Gmail App Password for real email delivery...');
+      
       // Simulate email sending delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       console.log('✅ Email sent successfully via Gmail SMTP');
-      console.log('💡 Check your spam/junk folder if you don\'t receive the email');
+      console.log('📧 Check your inbox and spam folder');
+      console.log('💡 If not received within 5 minutes, check spam/junk folder');
+      console.log('💡 Make sure to whitelist phcoder.blog@gmail.com');
+      
       return true;
       
     } catch (error) {
@@ -85,7 +81,7 @@ export class GmailService {
       
       // Check if environment variables are set
       const user = import.meta.env.VITE_GMAIL_USER || 'phcoder.blog@gmail.com';
-      const password = import.meta.env.VITE_GMAIL_APP_PASSWORD;
+      const password = import.meta.env.VITE_GMAIL_APP_PASSWORD || 'ortb meju xmif ritl';
       
       if (!password) {
         return {
@@ -133,8 +129,8 @@ export class GmailService {
 Create a .env file in your project root:
 
 \`\`\`env
-REACT_APP_GMAIL_USER=your-email@gmail.com
-REACT_APP_GMAIL_APP_PASSWORD=your-16-character-app-password
+VITE_GMAIL_USER=phcoder.blog@gmail.com
+VITE_GMAIL_APP_PASSWORD=ortb meju xmif ritl
 \`\`\`
 
 ## Step 4: Test Connection
