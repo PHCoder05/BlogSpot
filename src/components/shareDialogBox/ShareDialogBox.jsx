@@ -23,28 +23,45 @@ import {
 } from 'react-share';
 import Toast from '../toast/Toast';
 
-export default function ShareDialogBox({ title, url, description, image, hashtags = [] }) {
+export default function ShareDialogBox({ title, url, description, image, hashtags = [], isOpen, onClose, blog }) {
     const [open, setOpen] = useState(false);
     const [toast, setToast] = useState(null);
 
-    const handleOpen = () => setOpen(!open);
+    // Use external control if isOpen is provided, otherwise use internal state
+    const isDialogOpen = isOpen !== undefined ? isOpen : open;
+    const handleOpen = () => {
+        if (isOpen !== undefined) {
+            onClose && onClose();
+        } else {
+            setOpen(!open);
+        }
+    };
 
     const context = useContext(myContext);
     const { mode } = context;
 
     // Debug: Log component rendering and image data
-    console.log('ShareDialogBox rendering, mode:', mode, 'title:', title, 'image:', image);
+    console.log('ShareDialogBox rendering, mode:', mode, 'title:', title, 'image:', image, 'blog:', blog);
 
     // Get current page URL and title with proper SEO optimization
     const currentUrl = url || window.location.href;
     const currentTitle = title || document.title || 'PHcoder05 Blog';
     const currentDescription = description || 'Check out this amazing blog post!';
     
+    // Handle blog object structure - extract thumbnail from blog object
+    const getBlogImage = () => {
+        if (blog) {
+            // If blog object is provided, extract thumbnail from it
+            return blog.blogs?.thumbnail || blog.thumbnail || image;
+        }
+        return image;
+    };
+    
     // Create a better fallback image based on the blog content
     const getFallbackImage = () => {
       // Use different images based on the blog title or category
-      const blogTitle = title?.toLowerCase() || '';
-      const blogDescription = description?.toLowerCase() || '';
+      const blogTitle = (blog?.blogs?.title || title || '').toLowerCase();
+      const blogDescription = (blog?.blogs?.content || description || '').toLowerCase();
       
       if (blogTitle.includes('programming') || blogDescription.includes('code') || blogDescription.includes('programming')) {
         return 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80';
@@ -59,7 +76,7 @@ export default function ShareDialogBox({ title, url, description, image, hashtag
     };
     
     // Optimize image for social sharing - handle both direct image and blog object structure
-    const imageToUse = image || (typeof image === 'object' && image?.thumbnail) || getFallbackImage();
+    const imageToUse = getBlogImage() || getFallbackImage();
     const optimizedImage = optimizeThumbnail(imageToUse);
     const currentImage = optimizedImage.url;
     
@@ -68,6 +85,7 @@ export default function ShareDialogBox({ title, url, description, image, hashtag
     
     // Additional debugging for image handling
     console.log('Original image prop:', image);
+    console.log('Blog object:', blog);
     console.log('Current image URL:', currentImage);
     
     // Generate optimized hashtags
@@ -171,7 +189,7 @@ export default function ShareDialogBox({ title, url, description, image, hashtag
             </div>
             
             {/* Custom Modal */}
-            {open && (
+            {isDialogOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center">
                     {/* Backdrop */}
                     <div 

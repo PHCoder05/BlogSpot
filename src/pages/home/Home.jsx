@@ -11,6 +11,7 @@ import {
 import NewsletterSubscription from '../../components/NewsletterSubscription'
 import { Link } from 'react-router-dom'
 import DOMPurify from 'dompurify'
+import ShareDialogBox from '../../components/shareDialogBox/ShareDialogBox';
 
 function Home() {
   const context = useContext(myContext)
@@ -22,6 +23,8 @@ function Home() {
   const [viewMode, setViewMode] = useState('grid')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [currentBlogToShare, setCurrentBlogToShare] = useState(null);
 
   const blogTopics = [
     'Programming Tutorials',
@@ -137,17 +140,8 @@ function Home() {
   }
 
   const handleShare = (blog) => {
-    if (navigator.share) {
-      navigator.share({
-        title: blog.blogs?.title,
-        text: blog.blogs?.content?.substring(0, 100) + '...',
-        url: window.location.origin + `/bloginfo/${blog.id}`
-      })
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.origin + `/bloginfo/${blog.id}`)
-      alert('Link copied to clipboard!')
-    }
+    setCurrentBlogToShare(blog);
+    setShareDialogOpen(true);
   }
 
   const handleLike = (blogId) => {
@@ -708,6 +702,18 @@ function Home() {
           </div>
         </section>
       </Layout>
+      {shareDialogOpen && currentBlogToShare && (
+        <ShareDialogBox
+          title={currentBlogToShare.blogs?.title}
+          url={window.location.origin + `/bloginfo/${currentBlogToShare.id}`}
+          description={currentBlogToShare.blogs?.content?.replace(/<[^>]*>/g, '').slice(0, 160) || 'Check out this amazing blog post!'}
+          image={currentBlogToShare.blogs?.thumbnail || currentBlogToShare.thumbnail}
+          hashtags={currentBlogToShare.blogs?.tags || ['technology', 'programming', 'blog']}
+          isOpen={shareDialogOpen}
+          onClose={() => setShareDialogOpen(false)}
+          blog={currentBlogToShare}
+        />
+      )}
     </>
   )
 }
