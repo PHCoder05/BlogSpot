@@ -27,7 +27,13 @@ export const suppressQuillWarnings = () => {
                message.includes('quillWarningSuppression.js') ||
                message.includes('[Deprecation]') ||
                message.includes('Support for this event type has been removed') ||
-               message.includes('Support for mutation events is deprecated');
+               message.includes('Support for mutation events is deprecated') ||
+               message.includes('Cannot convert a Symbol value to a string') ||
+               message.includes('react-helmet') ||
+               message.includes('HelmetWrapper') ||
+               message.includes('warnOnInvalidChildren') ||
+               message.includes('ERR_BLOCKED_BY_CLIENT') ||
+               message.includes('net::ERR_BLOCKED_BY_CLIENT');
     };
     
     // Override console.error
@@ -60,6 +66,19 @@ export const suppressQuillWarnings = () => {
             
             // Suppress React DevTools messages
             if (message.includes('Download the React DevTools')) {
+                return;
+            }
+            
+            // Suppress React Helmet Symbol errors
+            if (message.includes('Cannot convert a Symbol value to a string') && 
+                (message.includes('react-helmet') || message.includes('HelmetWrapper'))) {
+                console.warn('React Helmet Symbol error suppressed:', message);
+                return;
+            }
+            
+            // Suppress ad blocker errors
+            if (message.includes('ERR_BLOCKED_BY_CLIENT') || message.includes('net::ERR_BLOCKED_BY_CLIENT')) {
+                console.warn('Ad blocker request blocked:', message);
                 return;
             }
         }

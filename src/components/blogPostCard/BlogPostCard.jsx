@@ -83,26 +83,61 @@ function BlogPostCard() {
   };
 
   const truncateText = (text, limit, id) => {
-    const sanitizedText = DOMPurify.sanitize(text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
-    const cleanedText = sanitizedText.replace(/&nbsp;/g, ' ');
+    if (!text) return '';
+    
+    try {
+      // First, sanitize the HTML content
+      const sanitizedText = DOMPurify.sanitize(text, { 
+        ALLOWED_TAGS: [], 
+        ALLOWED_ATTR: [] 
+      });
+      
+      // Clean up the text
+      let cleanedText = sanitizedText
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      // If the sanitized text is empty, try to extract text from HTML
+      if (!cleanedText) {
+        // Create a temporary div to parse HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = text;
+        cleanedText = tempDiv.textContent || tempDiv.innerText || '';
+        cleanedText = cleanedText.replace(/\s+/g, ' ').trim();
+      }
+      
+      // If still empty, return a default message
+      if (!cleanedText) {
+        return 'Click to read more...';
+      }
 
-    if (cleanedText.length <= limit) return cleanedText;
+      if (cleanedText.length <= limit) return cleanedText;
 
-    return (
-      <>
-        {cleanedText.substring(0, limit)}
-        <span
-          style={{
-            color: 'blue',
-            textDecoration: 'underline',
-            cursor: 'pointer'
-          }}
-          onClick={() => navigate(`/bloginfo/${id}`)}
-        >
-          {' read more...'}
-        </span>
-      </>
-    );
+      return (
+        <>
+          {cleanedText.substring(0, limit)}
+          <span
+            style={{
+              color: 'blue',
+              textDecoration: 'underline',
+              cursor: 'pointer'
+            }}
+            onClick={() => navigate(`/bloginfo/${id}`)}
+          >
+            {' read more...'}
+          </span>
+        </>
+      );
+    } catch (error) {
+      console.warn('Error processing text:', error);
+      return 'Click to read more...';
+    }
   };
 
   const indexOfLastPost = currentPage * postsPerPage;
@@ -339,13 +374,17 @@ function BlogPostCard() {
                     </div>
                     
                     {/* Enhanced Title */}
-                    <h2 className="text-xl font-bold mb-4 leading-tight group-hover:text-teal-500 transition-colors" style={{ color: mode === 'dark' ? 'white' : 'black' }}>
+                    <h3 
+                      onClick={() => navigate(`/bloginfo/${id}`)}
+                      className="text-xl font-bold mb-3 cursor-pointer hover:text-teal-500 transition-colors duration-300 line-clamp-2"
+                      style={{ color: mode === 'dark' ? 'black' : 'black' }}
+                    >
                       {blogs.title}
-                    </h2>
+                    </h3>
                     
                     {/* Enhanced Content Preview */}
-                    <p className={`text-base leading-relaxed mb-4 opacity-80 ${mode === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
-                      {truncateText(blogs.content, 120, id)}
+                    <p className={`text-base leading-relaxed mb-4 opacity-80 ${mode === 'dark' ? 'text-black' : 'text-gray-600'}`}>
+                      {truncateText(blogs.content, 120, id) || 'Click to read more...'}
                     </p>
                     
                     {/* Enhanced Tags */}
@@ -391,7 +430,7 @@ function BlogPostCard() {
                           <FaHeart className="text-red-500" />
                         </button>
                         <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                          <FaShare className="text-blue-500" />
+                          <FaShare className="text-blue-500 dark:text-blue-400" />
                         </button>
                         <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                           <FaBookmark className="text-yellow-500" />

@@ -9,7 +9,7 @@ import {
   FaSort, FaSortUp, FaSortDown, FaThumbsUp, FaEyeSlash, FaDownload,
   FaCog, FaBell, FaUser, FaEnvelope, FaGlobe, FaRocket, FaFire, FaImage
 } from 'react-icons/fa';
-import { Helmet } from 'react-helmet';
+import SEOComponent from '../../../components/SEOComponent';
 import toast from 'react-hot-toast';
 
 function Dashboard() {
@@ -125,10 +125,11 @@ function Dashboard() {
 
   return (
     <>
-      <Helmet>
-        <title>Admin Dashboard - PHcoder05 Blog</title>
-        <meta name="description" content="Manage your blog posts, view statistics, and control your content" />
-      </Helmet>
+      <SEOComponent 
+        type="admin"
+        currentUrl={window.location.href}
+        pageType="dashboard"
+      />
 
       <Layout>
         <div className={`min-h-screen ${mode === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>

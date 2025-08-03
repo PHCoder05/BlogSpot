@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Typography } from '@material-tailwind/react';
+import SEOComponent from '../../components/SEOComponent';
 import './NoPage.css'; // Import custom CSS for additional styling
 
 // Helper function to shuffle an array
@@ -71,7 +72,9 @@ const MemoryGame = () => {
 
 const NoPage = () => {
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-800 text-center px-4">
+    <>
+      <SEOComponent type="404" currentUrl={window.location.href} />
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-800 text-center px-4">
       <div className="animated-container">
         <Typography variant="h1" color="gray-900" className="text-6xl font-bold dark:text-white animate-bounce">
           404
@@ -99,6 +102,7 @@ const NoPage = () => {
         </Link>
       </div>
     </div>
+    </>
   );
 };
 

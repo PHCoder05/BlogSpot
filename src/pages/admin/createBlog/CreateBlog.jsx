@@ -8,11 +8,8 @@ import toast from 'react-hot-toast';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { fireDb, storage } from '../../../firebase/FirebaseConfig';
 import DynamicQuillEditor from '../../../components/QuillEditor/DynamicQuill';
-import { Helmet } from 'react-helmet';
+import SEOComponent from '../../../components/SEOComponent';
 import NewsletterService from '../../../utils/newsletterService';
-
-
-
 
 
 // Add custom styles for ReactQuill
@@ -1033,11 +1030,12 @@ console.log(greet('World'));</code></pre>
 
     return (
         <>
-            <Helmet>
-                <title>Create New Blog Post - PHcoder05 Blog</title>
-                <meta name="description" content="Create and publish new blog posts with advanced formatting options" />
-                <style>{quillStyles}</style>
-            </Helmet>
+            <SEOComponent 
+                type="admin"
+                currentUrl={window.location.href}
+                pageType="create"
+            />
+            <style>{quillStyles}</style>
 
             <div className={`min-h-screen ${mode === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
                 <div className='container mx-auto max-w-7xl py-6 px-4'>

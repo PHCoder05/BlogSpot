@@ -17,6 +17,7 @@ import {
 } from "firebase/auth";
 import { auth, googleAuthProvider } from "../../../firebase/FirebaseConfig";
 import { FaGoogle } from "react-icons/fa";
+import SEOComponent from "../../../components/SEOComponent";
 
 export default function AdminLogin() {
     const context = useContext(myContext);
@@ -97,7 +98,13 @@ export default function AdminLogin() {
     };
 
     return (
-        <div className="flex justify-center items-center h-screen">
+        <>
+            <SEOComponent 
+                type="admin"
+                currentUrl={window.location.href}
+                pageType="login"
+            />
+            <div className="flex justify-center items-center h-screen">
             <Card className="w-full max-w-[24rem]" style={{ background: mode === 'dark' ? 'rgb(30, 41, 59)' : 'rgb(226, 232, 240)' }}>
                 <CardHeader
                     floated={false}
@@ -133,5 +140,6 @@ export default function AdminLogin() {
                 </CardBody>
             </Card>
         </div>
+        </>
     );
 }

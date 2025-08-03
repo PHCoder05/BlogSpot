@@ -9,7 +9,8 @@ import {
   FaStar, FaFire, FaNewspaper, FaCode, FaCloud, FaServer, 
   FaGraduationCap, FaTimes, FaCheck, FaList, FaThLarge
 } from 'react-icons/fa';
-import { Helmet } from 'react-helmet';
+import ShareDialogBox from '../../components/shareDialogBox/ShareDialogBox';
+import SEOComponent from '../../components/SEOComponent';
 
 function AllBlogs() {
     const context = useContext(myContext);
@@ -47,9 +48,46 @@ function AllBlogs() {
 
     // Helper function to truncate text and remove HTML tags
     const truncateText = (text, limit) => {
-        const sanitizedText = DOMPurify.sanitize(text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
-        const cleanedText = sanitizedText.replace(/&nbsp;/g, ' ');
-        return cleanedText.length <= limit ? cleanedText : cleanedText.substring(0, limit) + '...';
+        if (!text) return '';
+        
+        try {
+            // First, sanitize the HTML content
+            const sanitizedText = DOMPurify.sanitize(text, { 
+                ALLOWED_TAGS: [], 
+                ALLOWED_ATTR: [] 
+            });
+            
+            // Clean up the text
+            let cleanedText = sanitizedText
+                .replace(/&nbsp;/g, ' ')
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&quot;/g, '"')
+                .replace(/&#39;/g, "'")
+                .replace(/\s+/g, ' ')
+                .trim();
+            
+            // If the sanitized text is empty, try to extract text from HTML
+            if (!cleanedText) {
+                // Create a temporary div to parse HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = text;
+                cleanedText = tempDiv.textContent || tempDiv.innerText || '';
+                cleanedText = cleanedText.replace(/\s+/g, ' ').trim();
+            }
+            
+            // If still empty, return a default message
+            if (!cleanedText) {
+                return 'Click to read more...';
+            }
+            
+            // Truncate if needed
+            return cleanedText.length <= limit ? cleanedText : cleanedText.substring(0, limit) + '...';
+        } catch (error) {
+            console.warn('Error processing text:', error);
+            return 'Click to read more...';
+        }
     };
 
     // Filter and sort blogs
@@ -157,22 +195,7 @@ function AllBlogs() {
         navigate(`/bloginfo/${id}`);
     };
 
-    // Handle share
-    const handleShare = (blog) => {
-        const url = `${window.location.origin}/bloginfo/${blog.id}`;
-        const text = `Check out this article: ${blog.blogs?.title}`;
-        
-        if (navigator.share) {
-            navigator.share({
-                title: blog.blogs?.title,
-                text: text,
-                url: url
-            });
-        } else {
-            // Fallback to copying to clipboard
-            navigator.clipboard.writeText(`${text} ${url}`);
-        }
-    };
+
 
     // Handle like
     const handleLike = (blogId) => {
@@ -188,11 +211,12 @@ function AllBlogs() {
 
     return (
         <Layout>
-            <Helmet>
-                <title>All Articles - PHcoder05 Blog</title>
-                <meta name="description" content="Explore all articles on programming, cloud computing, DevOps, and technology. Find in-depth tutorials and insights." />
-                <meta name="keywords" content="programming, cloud computing, devops, technology, tutorials, articles" />
-            </Helmet>
+            <SEOComponent 
+                type="allblogs" 
+                currentUrl={window.location.href}
+                totalBlogs={filteredAndSortedBlogs.length}
+                selectedCategory={selectedCategory}
+            />
 
             <section className={`min-h-screen py-8 ${
                 mode === 'dark' ? 'bg-gray-900' : 'bg-gray-50'
@@ -388,15 +412,15 @@ function AllBlogs() {
                                                             <h3 
                                                                 onClick={() => handleBlogClick(id)}
                                                                 className="text-xl font-bold mb-3 cursor-pointer hover:text-teal-500 transition-colors duration-200"
-                                                                style={{ color: mode === 'dark' ? 'white' : 'black' }}
+                                                                style={{ color: mode === 'dark' ? 'black' : 'black' }}
                                                             >
                                                                 {blogs?.title}
                                                             </h3>
 
                                                             <p className={`mb-4 line-clamp-3 ${
-                                                mode === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                                                mode === 'dark' ? 'text-black' : 'text-gray-600'
                                             }`}>
-                                                                {truncateText(blogs?.content || '', 120)}
+                                                                {truncateText(blogs?.content || '', 120) || 'Click to read more...'}
                                                             </p>
 
                                                             {/* Action Buttons */}
@@ -410,11 +434,16 @@ function AllBlogs() {
                                                                         <FaHeart className="w-4 h-4 text-red-500" />
                                                                     </button>
                                                                     <button
-                                                                        onClick={() => handleShare(item)}
                                                                         className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                                                                         title="Share"
+                                                                        style={{ 
+                                                                            color: mode === 'dark' ? '#ffffff' : '#374151',
+                                                                            backgroundColor: 'transparent',
+                                                                            border: 'none',
+                                                                            cursor: 'pointer'
+                                                                        }}
                                                                     >
-                                                                        <FaShare className="w-4 h-4 text-blue-500" />
+                                                                        <FaShare className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                                                                     </button>
                                                                     <button
                                                                         onClick={() => handleBookmark(id)}
@@ -458,15 +487,15 @@ function AllBlogs() {
                                                             <h3 
                                                                 onClick={() => handleBlogClick(id)}
                                                                 className="text-2xl font-bold mb-3 cursor-pointer hover:text-teal-500 transition-colors duration-200"
-                                                                style={{ color: mode === 'dark' ? 'white' : 'black' }}
+                                                                style={{ color: mode === 'dark' ? 'black' : 'black' }}
                                                             >
                                                                 {blogs?.title}
                                                             </h3>
 
                                                             <p className={`mb-4 ${
-                                                mode === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                                                mode === 'dark' ? 'text-black' : 'text-gray-600'
                                             }`}>
-                                                                {truncateText(blogs?.content || '', 200)}
+                                                                {truncateText(blogs?.content || '', 200) || 'Click to read more...'}
                                                             </p>
 
                                                             <div className="flex items-center justify-between">
@@ -479,11 +508,16 @@ function AllBlogs() {
                                                                         <FaHeart className="w-4 h-4 text-red-500" />
                                                                     </button>
                                                                     <button
-                                                                        onClick={() => handleShare(item)}
                                                                         className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                                                                         title="Share"
+                                                                        style={{ 
+                                                                            color: mode === 'dark' ? '#ffffff' : '#374151',
+                                                                            backgroundColor: 'transparent',
+                                                                            border: 'none',
+                                                                            cursor: 'pointer'
+                                                                        }}
                                                                     >
-                                                                        <FaShare className="w-4 h-4 text-blue-500" />
+                                                                        <FaShare className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                                                                     </button>
                                                                     <button
                                                                         onClick={() => handleBookmark(id)}

@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
-import { Helmet } from 'react-helmet';
 import myContext from '../../context/data/myContext';
 import { useParams, useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
@@ -8,6 +7,8 @@ import { fireDb } from '../../firebase/FirebaseConfig';
 import Loader from '../../components/loader/Loader';
 import Layout from '../../components/layout/Layout';
 import Comment from '../../components/comment/Comment';
+import ShareDialogBox from '../../components/shareDialogBox/ShareDialogBox';
+import SEOComponent from '../../components/SEOComponent';
 import toast from 'react-hot-toast';
 import { FacebookShareButton, TwitterShareButton, LinkedinShareButton, WhatsappShareButton, FacebookIcon, TwitterIcon, LinkedinIcon, WhatsappIcon } from 'react-share';
 import { 
@@ -372,28 +373,44 @@ function BlogInfo() {
     );
   }
 
+  // Debug logging to identify Symbol values
+  console.log('BlogInfo render - getBlogs:', getBlogs);
+  if (getBlogs?.blogs?.tags) {
+    console.log('Blog tags:', getBlogs.blogs.tags);
+    getBlogs.blogs.tags.forEach((tag, index) => {
+      if (typeof tag === 'symbol') {
+        console.error('Symbol found in tags at index:', index, tag);
+      }
+    });
+  }
+
+  // Create safe blog object
+  const safeBlog = getBlogs ? {
+    title: getBlogs.blogs?.title || '',
+    content: getBlogs.blogs?.content || '',
+    thumbnail: getBlogs.thumbnail || '',
+    tags: Array.isArray(getBlogs.blogs?.tags) 
+      ? getBlogs.blogs.tags.filter(tag => typeof tag === 'string' && tag.trim() !== '')
+      : [],
+    category: getBlogs.blogs?.category || '',
+    date: getBlogs.date || '',
+    author: 'Pankaj Hadole'
+  } : null;
+
   return (
     <Layout>
-      <Helmet>
-        <title>{getBlogs ? getBlogs.blogs.title : 'Blog'}</title>
-        <meta name="description" content={getBlogs?.blogs?.content.slice(0, 150)} />
-        <meta property="og:title" content={getBlogs?.blogs?.title} />
-        <meta property="og:description" content={getBlogs?.blogs?.content.slice(0, 150)} />
-        <meta property="og:image" content={getBlogs?.thumbnail} />
-        <script type="application/ld+json">
-          {`
-            {
-              "@context": "https://schema.org",
-              "@type": "BlogPosting",
-              "headline": "${getBlogs?.blogs?.title}",
-              "image": "${getBlogs?.thumbnail}",
-              "author": { "@type": "Person", "name": "Pankaj Hadole" },
-              "datePublished": "${getBlogs?.date}",
-              "articleBody": "${getBlogs?.blogs?.content.replace(/"/g, '\\"')}"
-            }
-          `}
-        </script>
-      </Helmet>
+      {safeBlog ? (
+        <SEOComponent 
+          type="blog"
+          blog={safeBlog}
+          currentUrl={window.location.href}
+        />
+      ) : (
+        <SEOComponent 
+          type="home"
+          currentUrl={window.location.href}
+        />
+      )}
 
       <div className="fixed top-0 left-0 w-full h-1.5 bg-gray-200 dark:bg-gray-700 z-50">
         <div 
@@ -484,17 +501,13 @@ function BlogInfo() {
                        <button onClick={handleLike} className={`flex items-center gap-2 p-2 rounded-lg ${mode === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}>
                            <FaHeart className={isLiked ? 'text-red-500' : 'text-gray-500'}/> <span className="text-sm font-semibold">{getBlogs?.blogs?.likedBy?.length || 0}</span>
                        </button>
-                       <div className="relative">
-                           <button onClick={() => setShowShareMenu(!showShareMenu)} className={`p-2 rounded-lg ${mode === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}><FaShare/></button>
-                           {showShareMenu && (
-                             <div className={`absolute top-full right-0 mt-2 p-2 rounded-xl shadow-xl z-10 flex gap-2 ${mode === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border'}`}>
-                               <FacebookShareButton url={shareUrl} quote={shareTitle}><FacebookIcon size={32} round /></FacebookShareButton>
-                               <TwitterShareButton url={shareUrl} title={shareTitle}><TwitterIcon size={32} round /></TwitterShareButton>
-                               <LinkedinShareButton url={shareUrl} title={shareTitle}><LinkedinIcon size={32} round /></LinkedinShareButton>
-                               <WhatsappShareButton url={shareUrl} title={shareTitle}><WhatsappIcon size={32} round /></WhatsappShareButton>
-                             </div>
-                           )}
-                       </div>
+                       <ShareDialogBox 
+                           title={getBlogs?.blogs?.title}
+                           url={window.location.href}
+                           description={getBlogs?.blogs?.content?.replace(/<[^>]*>/g, '').slice(0, 160)}
+                           image={getBlogs?.thumbnail}
+                           hashtags={getBlogs?.blogs?.tags || ['technology', 'programming', 'blog']}
+                       />
                        {user?.role === 'admin' && <button onClick={() => setIsEditing(!isEditing)} className={`p-2 rounded-lg ${mode === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}><FaEdit className="text-blue-500"/></button>}
                     </div>
                 </div>

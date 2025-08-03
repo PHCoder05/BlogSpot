@@ -14,6 +14,7 @@ import toast from 'react-hot-toast';
 import { doc, setDoc, Timestamp } from 'firebase/firestore';
 import myContext from '../../context/data/myContext';
 import { FaGoogle } from 'react-icons/fa';
+import SEOComponent from '../../components/SEOComponent';
 
 function Signup() {
     const context = useContext(myContext);
@@ -80,7 +81,12 @@ function Signup() {
     };
 
     return (
-        <div className="flex justify-center items-center h-screen">
+        <>
+            <SEOComponent 
+                type="signup"
+                currentUrl={window.location.href}
+            />
+            <div className="flex justify-center items-center h-screen">
             <Card className="w-full max-w-[24rem]" style={{ background: mode === 'dark' ? 'rgb(30, 41, 59)' : 'rgb(226, 232, 240)' }}>
                 <CardHeader
                     floated={false}
@@ -113,6 +119,7 @@ function Signup() {
                 </CardBody>
             </Card>
         </div>
+        </>
     );
 }
 

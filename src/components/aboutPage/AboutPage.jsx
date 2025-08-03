@@ -3,6 +3,7 @@ import { Typography, Button, Card, CardBody } from '@material-tailwind/react';
 import myContext from '../../context/data/myContext';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../layout/Layout';
+import SEOComponent from '../SEOComponent';
 import { 
   FaBookOpen, FaCode, FaCloud, FaServer, FaGraduationCap, FaPen, 
   FaHeart, FaUsers, FaCalendarAlt, FaGithub, FaLinkedin, FaTwitter, 
@@ -46,6 +47,11 @@ function AboutPage() {
 
   return (
     <Layout>
+      <SEOComponent 
+        type="about"
+        currentUrl={window.location.href}
+        totalBlogs={getAllBlog?.length || 0}
+      />
       <section className={`relative min-h-screen py-20 ${
         mode === 'dark' ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900' : 'bg-gradient-to-br from-blue-50 via-white to-indigo-100'
       }`}>

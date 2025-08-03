@@ -494,15 +494,15 @@ function Home() {
                           <h3 
                             onClick={() => handleBlogClick(id)}
                             className="text-xl font-bold mb-4 cursor-pointer hover:text-teal-500 transition-colors duration-300 line-clamp-2"
-                            style={{ color: mode === 'dark' ? 'white' : 'black' }}
+                            style={{ color: mode === 'dark' ? 'black' : 'black' }}
                           >
                             {blogs?.title}
                           </h3>
                           
                           <p className={`mb-6 line-clamp-3 leading-relaxed ${
-                            mode === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                            mode === 'dark' ? 'text-black' : 'text-gray-600'
                           }`}>
-                            {truncateText(blogs?.content || '', 120)}
+                            {truncateText(blogs?.content || '', 120) || 'Click to read more...'}
                           </p>
 
                             {/* Enhanced Action Buttons */}
@@ -520,7 +520,7 @@ function Home() {
                                   className="p-2 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-300 hover:scale-110 group"
                                   title="Share"
                                 >
-                                  <FaShare className="w-4 h-4 text-blue-500 group-hover:animate-pulse" />
+                                  <FaShare className="w-4 h-4 text-blue-500 dark:text-blue-400 group-hover:animate-pulse" />
                                 </button>
                                 <button
                                   onClick={() => handleBookmark(id)}
@@ -565,15 +565,15 @@ function Home() {
                             <h3 
                               onClick={() => handleBlogClick(id)}
                               className="text-2xl font-bold mb-3 cursor-pointer hover:text-teal-500 transition-colors duration-200"
-                              style={{ color: mode === 'dark' ? 'white' : 'black' }}
+                              style={{ color: mode === 'dark' ? 'black' : 'black' }}
                             >
                               {blogs?.title}
                             </h3>
 
                             <p className={`mb-4 ${
-                              mode === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                              mode === 'dark' ? 'text-black' : 'text-gray-600'
                             }`}>
-                              {truncateText(blogs?.content || '', 200)}
+                              {truncateText(blogs?.content || '', 200) || 'Click to read more...'}
                             </p>
 
                             <div className="flex items-center justify-between">
@@ -590,7 +590,7 @@ function Home() {
                                   className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                                   title="Share"
                                 >
-                                  <FaShare className="w-4 h-4 text-blue-500" />
+                                  <FaShare className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                                 </button>
                                 <button
                                   onClick={() => handleBookmark(id)}

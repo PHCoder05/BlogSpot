@@ -1,6 +1,6 @@
 import { Fragment, useContext, useState } from "react";
-import { Dialog, DialogBody } from "@material-tailwind/react";
 import myContext from "../../context/data/myContext";
+import { generateShareUrl, optimizeThumbnail, generateHashtags } from "../../utils/seoUtils";
 import {
     AiOutlineShareAlt,
     AiFillLinkedin,
@@ -9,9 +9,21 @@ import {
     AiFillFacebook,
     AiOutlineTwitter
 } from 'react-icons/ai';
+import { FaShare } from 'react-icons/fa';
+import { FaWhatsapp, FaTelegram, FaReddit, FaPinterest, FaTimes } from 'react-icons/fa';
+import { 
+    FacebookShareButton, 
+    TwitterShareButton, 
+    LinkedinShareButton, 
+    WhatsappShareButton,
+    FacebookIcon,
+    TwitterIcon,
+    LinkedinIcon,
+    WhatsappIcon
+} from 'react-share';
 import Toast from '../toast/Toast';
 
-export default function ShareDialogBox({ title, url }) {
+export default function ShareDialogBox({ title, url, description, image, hashtags = [] }) {
     const [open, setOpen] = useState(false);
     const [toast, setToast] = useState(null);
 
@@ -20,15 +32,62 @@ export default function ShareDialogBox({ title, url }) {
     const context = useContext(myContext);
     const { mode } = context;
 
-    // Get current page URL and title
+    // Debug: Log component rendering
+    console.log('ShareDialogBox rendering, mode:', mode, 'title:', title);
+
+    // Get current page URL and title with proper SEO optimization
     const currentUrl = url || window.location.href;
     const currentTitle = title || document.title || 'PHcoder05 Blog';
+    const currentDescription = description || 'Check out this amazing blog post!';
+    
+    // Optimize image for social sharing
+    const optimizedImage = optimizeThumbnail(image);
+    const currentImage = optimizedImage.url;
+    
+    // Generate optimized hashtags
+    const optimizedHashtags = generateHashtags(hashtags);
+    const currentHashtags = optimizedHashtags.join(' ');
 
-    // Social media share URLs
-    const linkedinShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}&title=${encodeURIComponent(currentTitle)}`;
-    const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`;
-    const twitterShareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(currentTitle)}`;
-    const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(currentTitle + ' ' + currentUrl)}`;
+    // Create share data object for SEO utilities
+    const shareData = {
+        url: currentUrl,
+        title: currentTitle,
+        description: currentDescription,
+        image: currentImage,
+        hashtags: optimizedHashtags
+    };
+
+    // Generate optimized share URLs using SEO utilities
+    const facebookShareUrl = generateShareUrl('facebook', shareData);
+    const twitterShareUrl = generateShareUrl('twitter', shareData);
+    const linkedinShareUrl = generateShareUrl('linkedin', shareData);
+    const whatsappShareUrl = generateShareUrl('whatsapp', shareData);
+    const telegramShareUrl = generateShareUrl('telegram', shareData);
+    const redditShareUrl = generateShareUrl('reddit', shareData);
+    const pinterestShareUrl = generateShareUrl('pinterest', shareData);
+
+    // Native Web Share API (for mobile devices)
+    const handleNativeShare = async () => {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: currentTitle,
+                    text: currentDescription,
+                    url: currentUrl,
+                });
+                setToast({
+                    message: 'Shared successfully!',
+                    type: 'success',
+                    duration: 2000
+                });
+            } catch (error) {
+                console.log('Error sharing:', error);
+            }
+        } else {
+            // Fallback to copy link
+            handleCopyLink();
+        }
+    };
 
     const handleShare = (shareUrl, platform) => {
         window.open(shareUrl, '_blank', 'width=600,height=400');
@@ -65,91 +124,167 @@ export default function ShareDialogBox({ title, url }) {
 
     return (
         <Fragment>
-            <div className="ml-auto cursor-pointer" onClick={handleOpen}>
-                <AiOutlineShareAlt 
-                    style={{ color: 'white' }} 
+            <div className="cursor-pointer" onClick={handleOpen}>
+                <FaShare 
                     size={20} 
-                    className="hover:text-teal-300 transition-colors duration-200"
+                    className={`transition-colors duration-200 hover:text-blue-500 ${
+                        mode === 'dark' ? 'text-white hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'
+                    }`}
+                    style={{ 
+                        color: mode === 'dark' ? '#ffffff' : '#374151',
+                        filter: mode === 'dark' ? 'brightness(1)' : 'none',
+                        opacity: mode === 'dark' ? '1' : '1',
+                        display: 'block',
+                        visibility: 'visible'
+                    }}
                 />
+                {/* Debug: Show text if icon doesn't render */}
+                <span className="sr-only">Share</span>
+                {/* Debug: Show visible text for testing */}
+                <span className={`text-xs ${mode === 'dark' ? 'text-white' : 'text-gray-700'}`} style={{display: 'none'}}>SHARE</span>
             </div>
             
-            {/* Dialog */}
-            <Dialog 
-                className="relative right-[1em] w-[25em] md:right-0 md:w-0 lg:right-0 lg:w-0" 
-                open={open} 
-                handler={handleOpen} 
-                style={{ 
-                    background: mode === 'dark' ? '#1e293b' : '#ffffff', 
-                    color: mode === 'dark' ? 'white' : 'black' 
-                }}
-            >
-                {/* DialogBody */}
-                <DialogBody>
-                    <div className="text-center mb-6">
-                        <h2 className={`text-xl font-bold mb-2 ${
-                            mode === 'dark' ? 'text-white' : 'text-gray-800'
-                        }`}>
-                            Share This Page
-                        </h2>
-                        <p className={`text-sm ${
-                            mode === 'dark' ? 'text-gray-300' : 'text-gray-600'
-                        }`}>
-                            Share this page with your friends and followers
-                        </p>
-                    </div>
+            {/* Custom Modal */}
+            {open && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    {/* Backdrop */}
+                    <div 
+                        className="absolute inset-0 bg-black bg-opacity-50"
+                        onClick={handleOpen}
+                    ></div>
+                    
+                    {/* Modal Content */}
+                    <div className={`relative w-full max-w-md mx-4 p-6 rounded-xl shadow-2xl ${
+                        mode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'
+                    }`}>
+                        {/* Close Button */}
+                        <button 
+                            onClick={handleOpen}
+                            className={`absolute top-4 right-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
+                                mode === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                            <FaTimes size={20} />
+                        </button>
 
-                    <div className="flex justify-center flex-wrap sm:mx-auto sm:mb-2 -mx-2 mt-4 mb-2">
+                        {/* Header */}
+                        <div className="text-center mb-6">
+                            <h2 className={`text-xl font-bold mb-2 ${
+                                mode === 'dark' ? 'text-white' : 'text-gray-800'
+                            }`}>
+                                Share This Page
+                            </h2>
+                            <p className={`text-sm ${
+                                mode === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                            }`}>
+                                Share this page with your friends and followers
+                            </p>
+                        </div>
+
+                        {/* Preview Card */}
+                        <div className={`mb-6 p-4 rounded-lg border ${
+                            mode === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'
+                        }`}>
+                            <div className="flex items-start space-x-3">
+                                <img 
+                                    src={currentImage} 
+                                    alt={currentTitle}
+                                    className="w-16 h-16 rounded-lg object-cover"
+                                />
+                                <div className="flex-1 min-w-0">
+                                    <h3 className={`text-sm font-semibold truncate ${
+                                        mode === 'dark' ? 'text-white' : 'text-gray-900'
+                                    }`}>
+                                        {currentTitle}
+                                    </h3>
+                                    <p className={`text-xs mt-1 line-clamp-2 ${
+                                        mode === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                                    }`}>
+                                        {currentDescription}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Social Media Icons */}
                         <div className="flex gap-4 flex-wrap justify-center">
-                            {/* LinkedIn */}
+                            {/* Native Share (Mobile) */}
                             <div 
                                 className="p-3 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors duration-200 cursor-pointer"
-                                onClick={() => handleShare(linkedinShareUrl, 'LinkedIn')}
-                                title="Share on LinkedIn"
-                            >
-                                <AiFillLinkedin 
-                                    size={35} 
-                                    className="text-blue-600 hover:text-blue-700 transition-colors duration-200" 
-                                />
-                            </div>
-
-                            {/* Facebook */}
-                            <div 
-                                className="p-3 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors duration-200 cursor-pointer"
-                                onClick={() => handleShare(facebookShareUrl, 'Facebook')}
-                                title="Share on Facebook"
-                            >
-                                <AiFillFacebook 
-                                    size={35} 
-                                    className="text-blue-600 hover:text-blue-700 transition-colors duration-200" 
-                                />
-                            </div>
-
-                            {/* Twitter */}
-                            <div 
-                                className="p-3 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors duration-200 cursor-pointer"
-                                onClick={() => handleShare(twitterShareUrl, 'Twitter')}
-                                title="Share on Twitter"
-                            >
-                                <AiOutlineTwitter 
-                                    size={35} 
-                                    className="text-blue-400 hover:text-blue-500 transition-colors duration-200" 
-                                />
-                            </div>
-
-                            {/* WhatsApp */}
-                            <div 
-                                className="p-3 rounded-full hover:bg-green-100 dark:hover:bg-green-900/20 transition-colors duration-200 cursor-pointer"
-                                onClick={() => handleShare(whatsappShareUrl, 'WhatsApp')}
-                                title="Share on WhatsApp"
+                                onClick={handleNativeShare}
+                                title="Share (Native)"
                             >
                                 <svg 
-                                    className="w-9 h-9 text-green-600 hover:text-green-700 transition-colors duration-200" 
+                                    className="w-9 h-9 text-blue-600 hover:text-blue-700 transition-colors duration-200" 
                                     fill="currentColor" 
                                     viewBox="0 0 24 24"
                                 >
-                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                                    <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
                                 </svg>
+                            </div>
+
+                            {/* Facebook - Using react-share component */}
+                            <FacebookShareButton url={currentUrl} quote={currentTitle + ' - ' + currentDescription}>
+                                <div className="p-3 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors duration-200">
+                                    <FacebookIcon size={35} round />
+                                </div>
+                            </FacebookShareButton>
+
+                            {/* Twitter - Using react-share component */}
+                            <TwitterShareButton url={currentUrl} title={currentTitle + ' - ' + currentDescription} hashtags={optimizedHashtags}>
+                                <div className="p-3 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors duration-200">
+                                    <TwitterIcon size={35} round />
+                                </div>
+                            </TwitterShareButton>
+
+                            {/* LinkedIn - Using react-share component */}
+                            <LinkedinShareButton url={currentUrl} title={currentTitle} summary={currentDescription}>
+                                <div className="p-3 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors duration-200">
+                                    <LinkedinIcon size={35} round />
+                                </div>
+                            </LinkedinShareButton>
+
+                            {/* WhatsApp - Using react-share component */}
+                            <WhatsappShareButton url={currentUrl} title={currentTitle + ' - ' + currentDescription}>
+                                <div className="p-3 rounded-full hover:bg-green-100 dark:hover:bg-green-900/20 transition-colors duration-200">
+                                    <WhatsappIcon size={35} round />
+                                </div>
+                            </WhatsappShareButton>
+
+                            {/* Telegram */}
+                            <div 
+                                className="p-3 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors duration-200 cursor-pointer"
+                                onClick={() => handleShare(telegramShareUrl, 'Telegram')}
+                                title="Share on Telegram"
+                            >
+                                <FaTelegram 
+                                    size={35} 
+                                    className="text-blue-500 hover:text-blue-600 transition-colors duration-200" 
+                                />
+                            </div>
+
+                            {/* Reddit */}
+                            <div 
+                                className="p-3 rounded-full hover:bg-orange-100 dark:hover:bg-orange-900/20 transition-colors duration-200 cursor-pointer"
+                                onClick={() => handleShare(redditShareUrl, 'Reddit')}
+                                title="Share on Reddit"
+                            >
+                                <FaReddit 
+                                    size={35} 
+                                    className="text-orange-500 hover:text-orange-600 transition-colors duration-200" 
+                                />
+                            </div>
+
+                            {/* Pinterest */}
+                            <div 
+                                className="p-3 rounded-full hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors duration-200 cursor-pointer"
+                                onClick={() => handleShare(pinterestShareUrl, 'Pinterest')}
+                                title="Share on Pinterest"
+                            >
+                                <FaPinterest 
+                                    size={35} 
+                                    className="text-red-600 hover:text-red-700 transition-colors duration-200" 
+                                />
                             </div>
 
                             {/* Copy Link */}
@@ -168,14 +303,14 @@ export default function ShareDialogBox({ title, url }) {
                                 </svg>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Powered By */}
-                    <div className="text-center mt-6">
-                        <h1 className="text-gray-600 text-sm">Powered By PHcoder05</h1>
+                        {/* Powered By */}
+                        <div className="text-center mt-6">
+                            <h1 className="text-gray-600 text-sm">Powered By PHcoder05</h1>
+                        </div>
                     </div>
-                </DialogBody>
-            </Dialog>
+                </div>
+            )}
 
             {/* Toast Notification */}
             {toast && (

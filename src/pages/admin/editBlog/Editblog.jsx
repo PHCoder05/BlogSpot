@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { fireDb, storage } from "../../../firebase/FirebaseConfig";
 import DynamicQuillEditor from '../../../components/QuillEditor/DynamicQuill';
+import SEOComponent from '../../../components/SEOComponent';
 
 function EditBlog() {
   const { id } = useParams();
@@ -357,7 +358,13 @@ function EditBlog() {
   }
 
   return (
-    <div className="container mx-auto max-w-5xl py-6">
+    <>
+      <SEOComponent 
+        type="admin"
+        currentUrl={window.location.href}
+        pageType="edit"
+      />
+      <div className="container mx-auto max-w-5xl py-6">
       <div className="p-5 rounded-lg shadow-lg" style={{
         background: mode === "dark" ? "#353b48" : "rgb(226, 232, 240)",
         borderBottom: mode === "dark" ? "4px solid rgb(226, 232, 240)" : "4px solid rgb(30, 41, 59)"
@@ -1266,7 +1273,8 @@ function EditBlog() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
