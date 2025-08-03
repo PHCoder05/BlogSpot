@@ -486,7 +486,7 @@ function Home() {
                             <div className="flex items-center gap-1">
                               <FaEye className={`w-4 h-4 ${mode === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
                               <span className={`${mode === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-xs`}>
-                                {blog.blogs?.views || 25} views
+                                {post.blogs?.views || 0} views
                               </span>
                             </div>
                           </div>
