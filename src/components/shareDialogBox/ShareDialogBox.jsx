@@ -291,21 +291,25 @@ export default function ShareDialogBox({ title, url, description, image, hashtag
                             {/* WhatsApp - Using react-share component */}
                             <WhatsappShareButton url={currentUrl} title={currentTitle + ' - ' + currentDescription}>
                                 <div className="p-3 rounded-full hover:bg-green-100 dark:hover:bg-green-900/20 transition-colors duration-200">
-                                    <WhatsappIcon size={35} round />
-                                </div>
-                            </WhatsappShareButton>
-
-                            {/* Telegram */}
-                            <div 
-                                className="p-3 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors duration-200 cursor-pointer"
-                                onClick={() => handleShare(telegramShareUrl, 'Telegram')}
-                                title="Share on Telegram"
-                            >
-                                <FaTelegram 
-                                    size={35} 
-                                    className="text-blue-500 hover:text-blue-600 transition-colors duration-200" 
-                                />
-                            </div>
+                                                                <WhatsappIcon size={35} round />
+                        </div>
+                    </WhatsappShareButton>
+                    {/* 
+                      NOTE: If WhatsApp is showing the wrong thumbnail, it's likely due to caching.
+                      To fix this, use the Facebook Sharing Debugger to clear the cache for the blog post URL:
+                      https://developers.facebook.com/tools/debug/
+                    */}
+                    {/* Telegram */}
+                    <div 
+                        className="p-3 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors duration-200 cursor-pointer"
+                        onClick={() => handleShare(telegramShareUrl, 'Telegram')}
+                        title="Share on Telegram"
+                    >
+                        <FaTelegram 
+                            size={35} 
+                            className="text-blue-500 hover:text-blue-600 transition-colors duration-200" 
+                        />
+                    </div>
 
                             {/* Reddit */}
                             <div 
