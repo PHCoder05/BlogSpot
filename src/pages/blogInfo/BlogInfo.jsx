@@ -428,6 +428,19 @@ function BlogInfo() {
     blog: safeBlog,
     currentUrl: window.location.href
   });
+  
+  // Test if meta tags are actually in the DOM
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development' && safeBlog) {
+      setTimeout(() => {
+        const ogImage = document.querySelector('meta[property="og:image"]');
+        const twitterImage = document.querySelector('meta[name="twitter:image"]');
+        console.log('DOM Check - OG Image meta tag:', ogImage?.content || 'NOT FOUND');
+        console.log('DOM Check - Twitter Image meta tag:', twitterImage?.content || 'NOT FOUND');
+        console.log('All meta tags:', document.querySelectorAll('meta').length);
+      }, 1000);
+    }
+  }, [safeBlog]);
 
   return (
     <Layout>

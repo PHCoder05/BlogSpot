@@ -237,6 +237,14 @@ const SEOComponent = ({
           <meta name="seo-component-test" content="SEO Component is working" />
         )}
         
+        {/* Force render the meta tags with the actual thumbnail */}
+        {process.env.NODE_ENV === 'development' && type === 'blog' && blog?.thumbnail && (
+          <>
+            <meta property="og:image" content={blog.thumbnail} />
+            <meta name="twitter:image" content={blog.thumbnail} />
+          </>
+        )}
+        
         {/* Basic Meta Tags */}
         <title>{safeString(seoTags.title)}</title>
         <meta name="description" content={safeString(seoTags.description)} />
