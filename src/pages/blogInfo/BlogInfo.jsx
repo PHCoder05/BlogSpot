@@ -390,7 +390,7 @@ function BlogInfo() {
   const safeBlog = getBlogs ? {
     title: getBlogs.blogs?.title || '',
     content: getBlogs.blogs?.content || '',
-    thumbnail: getBlogs.thumbnail || '',
+    thumbnail: getBlogs.blogs?.thumbnail || '',
     tags: Array.isArray(getBlogs.blogs?.tags) 
       ? getBlogs.blogs.tags.filter(tag => typeof tag === 'string' && tag.trim() !== '')
       : [],
@@ -457,7 +457,7 @@ function BlogInfo() {
           <div className={getReadingModeClass()}>
                 <div className="relative mb-8">
                     <div className="relative h-72 md:h-[450px] rounded-2xl overflow-hidden shadow-2xl group">
-                        <img alt="Blog thumbnail" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" src={getBlogs?.thumbnail} />
+                        <img alt="Blog thumbnail" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" src={getBlogs?.blogs.thumbnail} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
                         <div className="absolute top-4 left-4">
                             <span className="px-4 py-2 rounded-full text-sm font-bold bg-white/20 text-white backdrop-blur-sm border border-white/30">{getBlogs?.blogs?.category || 'General'}</span>
@@ -511,7 +511,7 @@ function BlogInfo() {
                            title={getBlogs?.blogs?.title}
                            url={window.location.href}
                            description={getBlogs?.blogs?.content?.replace(/<[^>]*>/g, '').slice(0, 160)}
-                           image={getBlogs?.blogs?.thumbnail || getBlogs?.thumbnail}
+                           image={getBlogs?.blogs?.thumbnail}
                            hashtags={getBlogs?.blogs?.tags || ['technology', 'programming', 'blog']}
                            blog={getBlogs}
                        />

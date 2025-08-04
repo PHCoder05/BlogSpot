@@ -69,14 +69,6 @@ export default function ShareDialogBox({ title, url, description, image, hashtag
         return 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80';
       } else if (blogTitle.includes('devops') || blogDescription.includes('devops') || blogDescription.includes('deployment')) {
         return 'https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80';
-      } else if (blogTitle.includes('react') || blogDescription.includes('react') || blogDescription.includes('javascript')) {
-        return 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80';
-      } else if (blogTitle.includes('python') || blogDescription.includes('python') || blogDescription.includes('django')) {
-        return 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80';
-      } else if (blogTitle.includes('ai') || blogDescription.includes('ai') || blogDescription.includes('machine learning') || blogDescription.includes('artificial intelligence')) {
-        return 'https://images.unsplash.com/photo-1677442136019-21780ecad995?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80';
-      } else if (blogTitle.includes('web') || blogDescription.includes('web') || blogDescription.includes('frontend') || blogDescription.includes('backend')) {
-        return 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80';
       } else {
         // Default tech blog image
         return 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80';
@@ -117,12 +109,6 @@ export default function ShareDialogBox({ title, url, description, image, hashtag
     const telegramShareUrl = generateShareUrl('telegram', shareData);
     const redditShareUrl = generateShareUrl('reddit', shareData);
     const pinterestShareUrl = generateShareUrl('pinterest', shareData);
-
-    // Enhanced share URLs with better thumbnail support
-    const enhancedFacebookUrl = `${facebookShareUrl}&picture=${encodeURIComponent(currentImage)}`;
-    const enhancedTwitterUrl = `${twitterShareUrl}&image=${encodeURIComponent(currentImage)}`;
-    const enhancedLinkedInUrl = `${linkedinShareUrl}&image=${encodeURIComponent(currentImage)}`;
-    const enhancedPinterestUrl = `${pinterestShareUrl}&media=${encodeURIComponent(currentImage)}`;
 
     // Native Web Share API (for mobile devices)
     const handleNativeShare = async () => {
@@ -282,28 +268,28 @@ export default function ShareDialogBox({ title, url, description, image, hashtag
                             </div>
 
                             {/* Facebook - Using react-share component */}
-                            <FacebookShareButton url={enhancedFacebookUrl} quote={currentTitle + ' - ' + currentDescription}>
+                            <FacebookShareButton url={currentUrl} quote={currentTitle + ' - ' + currentDescription}>
                                 <div className="p-3 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors duration-200">
                                     <FacebookIcon size={35} round />
                                 </div>
                             </FacebookShareButton>
 
                             {/* Twitter - Using react-share component */}
-                            <TwitterShareButton url={enhancedTwitterUrl} title={currentTitle + ' - ' + currentDescription} hashtags={optimizedHashtags}>
+                            <TwitterShareButton url={currentUrl} title={currentTitle + ' - ' + currentDescription} hashtags={optimizedHashtags}>
                                 <div className="p-3 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors duration-200">
                                     <TwitterIcon size={35} round />
                                 </div>
                             </TwitterShareButton>
 
                             {/* LinkedIn - Using react-share component */}
-                            <LinkedinShareButton url={enhancedLinkedInUrl} title={currentTitle} summary={currentDescription}>
+                            <LinkedinShareButton url={currentUrl} title={currentTitle} summary={currentDescription}>
                                 <div className="p-3 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors duration-200">
                                     <LinkedinIcon size={35} round />
                                 </div>
                             </LinkedinShareButton>
 
                             {/* WhatsApp - Using react-share component */}
-                            <WhatsappShareButton url={whatsappShareUrl} title={currentTitle + ' - ' + currentDescription}>
+                            <WhatsappShareButton url={currentUrl} title={currentTitle + ' - ' + currentDescription}>
                                 <div className="p-3 rounded-full hover:bg-green-100 dark:hover:bg-green-900/20 transition-colors duration-200">
                                     <WhatsappIcon size={35} round />
                                 </div>
@@ -336,7 +322,7 @@ export default function ShareDialogBox({ title, url, description, image, hashtag
                             {/* Pinterest */}
                             <div 
                                 className="p-3 rounded-full hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors duration-200 cursor-pointer"
-                                onClick={() => handleShare(enhancedPinterestUrl, 'Pinterest')}
+                                onClick={() => handleShare(pinterestShareUrl, 'Pinterest')}
                                 title="Share on Pinterest"
                             >
                                 <FaPinterest 
