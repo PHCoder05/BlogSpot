@@ -17,20 +17,54 @@
  * @returns {Object} SEO meta tags object
  */
 export const generateBlogSEOTags = (blog, currentUrl) => {
-  const cleanContent = blog?.content?.replace(/<[^>]*>/g, '').slice(0, 160) || '';
+  // Create a more engaging description that entices users to read more
+  const createEngagingDescription = (content) => {
+    if (!content) return 'Discover insights and knowledge in this comprehensive blog post.';
+    
+    // Remove HTML tags and clean up content
+    const cleanText = content.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    
+    // Take first 200-250 characters for a better teaser
+    const maxLength = 200;
+    
+    if (cleanText.length <= maxLength) {
+      return cleanText;
+    }
+    
+    // Find the last complete sentence within the limit
+    const truncated = cleanText.substring(0, maxLength);
+    const lastSentenceEnd = Math.max(
+      truncated.lastIndexOf('.'),
+      truncated.lastIndexOf('!'),
+      truncated.lastIndexOf('?')
+    );
+    
+    if (lastSentenceEnd > 100) {
+      // If we found a sentence ending after 100 chars, use it
+      return truncated.substring(0, lastSentenceEnd + 1) + '..';
+    } else {
+      // Otherwise, find the last space to avoid cutting words
+      const lastSpace = truncated.lastIndexOf(' ');
+      if (lastSpace > 100) {
+        return truncated.substring(0, lastSpace) + '...';
+      }
+      return truncated + '...';
+    }
+  };
+
+  const engagingDescription = createEngagingDescription(blog?.content);
   const tags = blog?.tags?.join(', ') || 'blog, technology, programming';
   const author = blog?.author || 'Pankaj Hadole';
   const category = blog?.category || 'Technology';
   const title = blog?.title || 'Blog Post';
   
-  // Use the blog thumbnail if available, otherwise use a better default
-  const defaultThumbnail = 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80';
-  const thumbnail = blog?.thumbnail || blog?.blogs?.thumbnail || defaultThumbnail;
+  // Use the blog thumbnail - no fallback to Unsplash
+  const thumbnail = blog?.thumbnail || blog?.blogs?.thumbnail || '/logo.png';
 
   return {
     // Basic Meta Tags
     title: title,
-    description: cleanContent,
+    description: engagingDescription,
     keywords: tags,
     author: author,
     robots: 'index, follow',
@@ -38,7 +72,7 @@ export const generateBlogSEOTags = (blog, currentUrl) => {
     // Open Graph / Facebook
     ogType: 'article',
     ogTitle: title,
-    ogDescription: cleanContent,
+    ogDescription: engagingDescription,
     ogImage: thumbnail,
     ogImageWidth: '1200',
     ogImageHeight: '630',
@@ -54,7 +88,7 @@ export const generateBlogSEOTags = (blog, currentUrl) => {
     // Twitter Card
     twitterCard: 'summary_large_image',
     twitterTitle: title,
-    twitterDescription: cleanContent,
+    twitterDescription: engagingDescription,
     twitterImage: thumbnail,
     twitterImageAlt: title,
     twitterSite: '@phcoder05',
@@ -70,7 +104,7 @@ export const generateBlogSEOTags = (blog, currentUrl) => {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
       "headline": title,
-      "description": cleanContent,
+      "description": engagingDescription,
       "image": {
         "@type": "ImageObject",
         "url": thumbnail,
@@ -87,7 +121,7 @@ export const generateBlogSEOTags = (blog, currentUrl) => {
         "name": "PHcoder05",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+          "url": "https://phcoder05.vercel.app/logo.png"
         }
       },
       "datePublished": blog?.date,
