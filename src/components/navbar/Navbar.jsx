@@ -90,7 +90,14 @@ export default function Nav() {
                         
                         <div className="flex items-center gap-2">
                             <SearchDialog />
-                            <div className="hidden lg:block"><ShareDialogBox /></div>
+                            <div className="hidden lg:block">
+                                <ShareDialogBox 
+                                    title="PHcoder05 Blog"
+                                    url={window.location.href}
+                                    description="Check out amazing tech articles and programming tutorials!"
+                                    hashtags={['technology', 'programming', 'blog']}
+                                />
+                            </div>
                         </div>
 
                         {user ? (

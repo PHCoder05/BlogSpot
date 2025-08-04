@@ -189,8 +189,11 @@ const SEOComponent = ({
   selectedCategory = 'all',
   pageType = 'dashboard' // for admin pages
 }) => {
+  // Additional safety check for blog object
+  const safeBlog = blog && typeof blog === 'object' ? blog : null;
+  
   // Generate safe SEO tags
-  const seoTags = generateSafeSEOTags(type, blog, currentUrl, totalBlogs, selectedCategory, pageType);
+  const seoTags = generateSafeSEOTags(type, safeBlog, currentUrl, totalBlogs, selectedCategory, pageType);
   
   // Debug logging (only in development)
   if (process.env.NODE_ENV === 'development') {
@@ -237,14 +240,6 @@ const SEOComponent = ({
           <meta name="seo-component-test" content="SEO Component is working" />
         )}
         
-        {/* Force render the meta tags with the actual thumbnail */}
-        {process.env.NODE_ENV === 'development' && type === 'blog' && blog?.thumbnail && (
-          <>
-            <meta property="og:image" content={blog.thumbnail} />
-            <meta name="twitter:image" content={blog.thumbnail} />
-          </>
-        )}
-        
         {/* Basic Meta Tags */}
         <title>{safeString(seoTags.title)}</title>
         <meta name="description" content={safeString(seoTags.description)} />
@@ -267,12 +262,15 @@ const SEOComponent = ({
         {/* Article-specific Open Graph tags */}
         {type === 'blog' && (
           <>
-            <meta property="article:author" content={safeString(seoTags.articleAuthor)} />
             <meta property="article:published_time" content={safeString(seoTags.articlePublishedTime)} />
+            <meta property="article:modified_time" content={safeString(seoTags.articleModifiedTime)} />
+            <meta property="article:author" content={safeString(seoTags.articleAuthor)} />
             <meta property="article:section" content={safeString(seoTags.articleSection)} />
-            {safeArray(seoTags.articleTags).map((tag, index) => (
-              <meta key={index} property="article:tag" content={safeString(tag)} />
-            ))}
+            {seoTags.articleTags && seoTags.articleTags.length > 0 && 
+              seoTags.articleTags.map((tag, index) => (
+                <meta key={index} property="article:tag" content={safeString(tag)} />
+              ))
+            }
           </>
         )}
         
@@ -285,7 +283,7 @@ const SEOComponent = ({
         <meta name="twitter:site" content={safeString(seoTags.twitterSite)} />
         <meta name="twitter:creator" content={safeString(seoTags.twitterCreator)} />
         
-        {/* Additional SEO Meta Tags */}
+        {/* Additional Meta Tags */}
         <meta name="theme-color" content={safeString(seoTags.themeColor)} />
         <meta name="msapplication-TileColor" content={safeString(seoTags.msTileColor)} />
         <link rel="canonical" href={safeString(seoTags.canonicalUrl)} />

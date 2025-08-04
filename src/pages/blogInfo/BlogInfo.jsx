@@ -554,14 +554,17 @@ function BlogInfo() {
                        <button onClick={handleLike} className={`flex items-center gap-2 p-2 rounded-lg ${mode === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}>
                            <FaHeart className={isLiked ? 'text-red-500' : 'text-gray-500'}/> <span className="text-sm font-semibold">{getBlogs?.blogs?.likedBy?.length || 0}</span>
                        </button>
-                       <ShareDialogBox 
-                           title={getBlogs?.blogs?.title}
-                           url={window.location.href}
-                           description={getBlogs?.blogs?.content?.replace(/<[^>]*>/g, '').slice(0, 160)}
-                           image={getBlogs?.blogs?.thumbnail || getBlogs?.thumbnail}
-                           hashtags={getBlogs?.blogs?.tags || ['technology', 'programming', 'blog']}
-                           blog={getBlogs}
-                       />
+                       {getBlogs && (
+                         <ShareDialogBox 
+                             key={`share-${params.id}`}
+                             title={getBlogs?.blogs?.title}
+                             url={window.location.href}
+                             description={getBlogs?.blogs?.content?.replace(/<[^>]*>/g, '').slice(0, 160)}
+                             image={getBlogs?.blogs?.thumbnail || getBlogs?.thumbnail}
+                             hashtags={getBlogs?.blogs?.tags || ['technology', 'programming', 'blog']}
+                             blog={getBlogs}
+                         />
+                       )}
                        {user?.role === 'admin' && <button onClick={() => setIsEditing(!isEditing)} className={`p-2 rounded-lg ${mode === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}><FaEdit className="text-blue-500"/></button>}
                     </div>
                 </div>
