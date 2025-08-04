@@ -19,6 +19,7 @@ import {
 } from 'react-icons/fa';
 import { generateSocialPreviewTestUrls, validateMetaTags } from '../../utils/seoUtils';
 import { debugThumbnailUrl, getSocialMediaTestLinks } from '../../utils/thumbnailTest';
+import { Helmet } from 'react-helmet';
 
 const Ad = ({ position }) => (
   <div className="ad-container my-8 text-center">
@@ -420,6 +421,13 @@ function BlogInfo() {
       urlLength: safeBlog.thumbnail.length
     });
   }
+  
+  // Debug SEOComponent props
+  console.log('SEOComponent props:', {
+    type: 'blog',
+    blog: safeBlog,
+    currentUrl: window.location.href
+  });
 
   return (
     <Layout>
@@ -434,6 +442,14 @@ function BlogInfo() {
           type="home"
           currentUrl={window.location.href}
         />
+      )}
+      
+      {/* Test meta tags directly */}
+      {process.env.NODE_ENV === 'development' && safeBlog && (
+        <Helmet>
+          <meta property="og:image" content={safeBlog.thumbnail} />
+          <meta name="twitter:image" content={safeBlog.thumbnail} />
+        </Helmet>
       )}
 
       <div className="fixed top-0 left-0 w-full h-1.5 bg-gray-200 dark:bg-gray-700 z-50">

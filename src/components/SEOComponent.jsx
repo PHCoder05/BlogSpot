@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { 
   generateBlogSEOTags, 
@@ -195,6 +195,9 @@ const SEOComponent = ({
   // Debug logging (only in development)
   if (process.env.NODE_ENV === 'development') {
     console.log('SEOComponent rendered with:', { type, blog: !!blog, currentUrl });
+    console.log('Generated SEO tags:', seoTags);
+    console.log('OG Image:', seoTags.ogImage);
+    console.log('Twitter Image:', seoTags.twitterImage);
     
     // Check for Symbol values in blog data
     if (blog) {
@@ -214,9 +217,26 @@ const SEOComponent = ({
     }
   }
   
+  // Check if meta tags are actually rendered in DOM
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      setTimeout(() => {
+        const ogImage = document.querySelector('meta[property="og:image"]');
+        const twitterImage = document.querySelector('meta[name="twitter:image"]');
+        console.log('DOM Check - OG Image meta tag:', ogImage?.content || 'NOT FOUND');
+        console.log('DOM Check - Twitter Image meta tag:', twitterImage?.content || 'NOT FOUND');
+      }, 100);
+    }
+  }, [seoTags.ogImage, seoTags.twitterImage]);
+  
   return (
     <SEOErrorBoundary>
       <Helmet>
+        {/* Test meta tag to verify Helmet is working */}
+        {process.env.NODE_ENV === 'development' && (
+          <meta name="seo-component-test" content="SEO Component is working" />
+        )}
+        
         {/* Basic Meta Tags */}
         <title>{safeString(seoTags.title)}</title>
         <meta name="description" content={safeString(seoTags.description)} />
@@ -228,7 +248,7 @@ const SEOComponent = ({
         <meta property="og:type" content={safeString(seoTags.ogType)} />
         <meta property="og:title" content={safeString(seoTags.ogTitle)} />
         <meta property="og:description" content={safeString(seoTags.ogDescription)} />
-        <meta property="og:image" content={safeString(seoTags.ogImage)} />
+        <meta property="og:image" content={safeString(seoTags.ogImage) || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'} />
         <meta property="og:image:width" content={safeString(seoTags.ogImageWidth)} />
         <meta property="og:image:height" content={safeString(seoTags.ogImageHeight)} />
         <meta property="og:image:alt" content={safeString(seoTags.ogImageAlt)} />
@@ -252,7 +272,7 @@ const SEOComponent = ({
         <meta name="twitter:card" content={safeString(seoTags.twitterCard)} />
         <meta name="twitter:title" content={safeString(seoTags.twitterTitle)} />
         <meta name="twitter:description" content={safeString(seoTags.twitterDescription)} />
-        <meta name="twitter:image" content={safeString(seoTags.twitterImage)} />
+        <meta name="twitter:image" content={safeString(seoTags.twitterImage) || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'} />
         <meta name="twitter:image:alt" content={safeString(seoTags.twitterImageAlt)} />
         <meta name="twitter:site" content={safeString(seoTags.twitterSite)} />
         <meta name="twitter:creator" content={safeString(seoTags.twitterCreator)} />
