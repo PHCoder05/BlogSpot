@@ -368,7 +368,7 @@ function BlogInfo() {
     setActiveSection(id);
   };
   
-  if (loading) {
+  if (loading || !getBlogs) {
     return (
       <Layout>
         <div className="flex justify-center items-center h-screen">
@@ -380,7 +380,7 @@ function BlogInfo() {
 
   // Debug logging to identify Symbol values
   console.log('BlogInfo render - getBlogs:', getBlogs);
-  if (getBlogs?.blogs?.tags) {
+  if (getBlogs?.blogs?.tags && Array.isArray(getBlogs.blogs.tags)) {
     console.log('Blog tags:', getBlogs.blogs.tags);
     getBlogs.blogs.tags.forEach((tag, index) => {
       if (typeof tag === 'symbol') {
@@ -390,7 +390,7 @@ function BlogInfo() {
   }
 
   // Create safe blog object
-  const safeBlog = getBlogs ? {
+  const safeBlog = getBlogs && typeof getBlogs === 'object' ? {
     title: getBlogs.blogs?.title || '',
     content: getBlogs.blogs?.content || '',
     thumbnail: getBlogs?.thumbnail || getBlogs?.blogs?.thumbnail || '',
@@ -457,7 +457,7 @@ function BlogInfo() {
         />
       )}
       
-      {/* Test meta tags directly */}
+            {/* Test meta tags directly */}
       {process.env.NODE_ENV === 'development' && safeBlog && (
         <Helmet>
           <meta property="og:image" content={safeBlog.thumbnail} />
@@ -556,7 +556,7 @@ function BlogInfo() {
                        </button>
                        {getBlogs && (
                          <ShareDialogBox 
-                             key={`share-${params.id}`}
+                             key={`share-${params.id}-${getBlogs?.blogs?.title || 'default'}`}
                              title={getBlogs?.blogs?.title}
                              url={window.location.href}
                              description={getBlogs?.blogs?.content?.replace(/<[^>]*>/g, '').slice(0, 160)}

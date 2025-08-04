@@ -1,4 +1,4 @@
-import { Fragment, useContext, useState } from "react";
+import { Fragment, useContext, useState, memo } from "react";
 import myContext from "../../context/data/myContext";
 import { generateShareUrl, optimizeThumbnail, generateHashtags } from "../../utils/seoUtils";
 import {
@@ -23,7 +23,7 @@ import {
 } from 'react-share';
 import Toast from '../toast/Toast';
 
-export default function ShareDialogBox({ title, url, description, image, hashtags = [], isOpen, onClose, blog }) {
+function ShareDialogBox({ title, url, description, image, hashtags = [], isOpen, onClose, blog }) {
     const [open, setOpen] = useState(false);
     const [toast, setToast] = useState(null);
 
@@ -50,7 +50,7 @@ export default function ShareDialogBox({ title, url, description, image, hashtag
     
     // Handle blog object structure - extract thumbnail from blog object
     const getBlogImage = () => {
-        if (blog) {
+        if (blog && typeof blog === 'object') {
             // If blog object is provided, extract thumbnail from it
             return blog.blogs?.thumbnail || blog.thumbnail || image;
         }
@@ -77,8 +77,22 @@ export default function ShareDialogBox({ title, url, description, image, hashtag
     
     // Optimize image for social sharing - handle both direct image and blog object structure
     const imageToUse = getBlogImage() || getFallbackImage();
-    const optimizedImage = optimizeThumbnail(imageToUse);
-    const currentImage = optimizedImage.url;
+    let optimizedImage;
+    let currentImage;
+    
+    try {
+        optimizedImage = optimizeThumbnail(imageToUse);
+        currentImage = optimizedImage.url;
+    } catch (error) {
+        console.error('Error optimizing thumbnail:', error);
+        optimizedImage = {
+            url: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+            width: 1200,
+            height: 630,
+            alt: 'Blog Post Thumbnail'
+        };
+        currentImage = optimizedImage.url;
+    }
     
     // Debug: Log optimized image
     console.log('Optimized image:', optimizedImage);
@@ -88,9 +102,19 @@ export default function ShareDialogBox({ title, url, description, image, hashtag
     console.log('Blog object:', blog);
     console.log('Current image URL:', currentImage);
     
-    // Generate optimized hashtags
-    const optimizedHashtags = generateHashtags(hashtags);
-    const currentHashtags = optimizedHashtags.join(' ');
+    // Generate optimized hashtags - ensure hashtags is an array
+    const safeHashtags = Array.isArray(hashtags) ? hashtags : [];
+    let optimizedHashtags;
+    let currentHashtags;
+    
+    try {
+        optimizedHashtags = generateHashtags(safeHashtags);
+        currentHashtags = optimizedHashtags.join(' ');
+    } catch (error) {
+        console.error('Error generating hashtags:', error);
+        optimizedHashtags = ['technology', 'programming', 'blog'];
+        currentHashtags = optimizedHashtags.join(' ');
+    }
 
     // Create share data object for SEO utilities
     const shareData = {
@@ -102,13 +126,28 @@ export default function ShareDialogBox({ title, url, description, image, hashtag
     };
 
     // Generate optimized share URLs using SEO utilities
-    const facebookShareUrl = generateShareUrl('facebook', shareData);
-    const twitterShareUrl = generateShareUrl('twitter', shareData);
-    const linkedinShareUrl = generateShareUrl('linkedin', shareData);
-    const whatsappShareUrl = generateShareUrl('whatsapp', shareData);
-    const telegramShareUrl = generateShareUrl('telegram', shareData);
-    const redditShareUrl = generateShareUrl('reddit', shareData);
-    const pinterestShareUrl = generateShareUrl('pinterest', shareData);
+    let facebookShareUrl, twitterShareUrl, linkedinShareUrl, whatsappShareUrl, telegramShareUrl, redditShareUrl, pinterestShareUrl;
+    
+    try {
+        facebookShareUrl = generateShareUrl('facebook', shareData);
+        twitterShareUrl = generateShareUrl('twitter', shareData);
+        linkedinShareUrl = generateShareUrl('linkedin', shareData);
+        whatsappShareUrl = generateShareUrl('whatsapp', shareData);
+        telegramShareUrl = generateShareUrl('telegram', shareData);
+        redditShareUrl = generateShareUrl('reddit', shareData);
+        pinterestShareUrl = generateShareUrl('pinterest', shareData);
+    } catch (error) {
+        console.error('Error generating share URLs:', error);
+        // Fallback URLs
+        const fallbackUrl = currentUrl;
+        facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(fallbackUrl)}`;
+        twitterShareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(fallbackUrl)}&text=${encodeURIComponent(currentTitle)}`;
+        linkedinShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(fallbackUrl)}`;
+        whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(currentTitle + ' ' + fallbackUrl)}`;
+        telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(fallbackUrl)}&text=${encodeURIComponent(currentTitle)}`;
+        redditShareUrl = `https://reddit.com/submit?url=${encodeURIComponent(fallbackUrl)}&title=${encodeURIComponent(currentTitle)}`;
+        pinterestShareUrl = `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(fallbackUrl)}&description=${encodeURIComponent(currentTitle)}`;
+    }
 
     // Native Web Share API (for mobile devices)
     const handleNativeShare = async () => {
@@ -372,3 +411,5 @@ export default function ShareDialogBox({ title, url, description, image, hashtag
         </Fragment>
     );
 }
+
+export default memo(ShareDialogBox);
