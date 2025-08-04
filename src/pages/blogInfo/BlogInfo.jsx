@@ -17,6 +17,8 @@ import {
   FaThumbsUp, FaThumbsDown, FaBookOpen, FaStar, FaDownload, FaLink,
   FaEllipsisH, FaTimes, FaCheck, FaPencilAlt, FaTrash, FaReply, FaListUl, FaExpand, FaCompress, FaTextHeight
 } from 'react-icons/fa';
+import { generateSocialPreviewTestUrls, validateMetaTags } from '../../utils/seoUtils';
+import { debugThumbnailUrl, getSocialMediaTestLinks } from '../../utils/thumbnailTest';
 
 const Ad = ({ position }) => (
   <div className="ad-container my-8 text-center">
@@ -390,7 +392,7 @@ function BlogInfo() {
   const safeBlog = getBlogs ? {
     title: getBlogs.blogs?.title || '',
     content: getBlogs.blogs?.content || '',
-    thumbnail: getBlogs?.blogs?.thumbnail || getBlogs?.thumbnail || '',
+    thumbnail: getBlogs?.thumbnail || getBlogs?.blogs?.thumbnail || '',
     tags: Array.isArray(getBlogs.blogs?.tags) 
       ? getBlogs.blogs.tags.filter(tag => typeof tag === 'string' && tag.trim() !== '')
       : [],
@@ -402,6 +404,22 @@ function BlogInfo() {
   // Debug: Log safe blog object
   console.log('Safe blog object:', safeBlog);
   console.log('Safe blog thumbnail:', safeBlog?.thumbnail);
+  console.log('Original blog data:', getBlogs);
+  console.log('Original thumbnail paths:', {
+    blogsThumbnail: getBlogs?.blogs?.thumbnail,
+    directThumbnail: getBlogs?.thumbnail
+  });
+  
+  // Additional debugging for thumbnail URL
+  if (safeBlog?.thumbnail) {
+    console.log('Thumbnail URL analysis:', {
+      originalUrl: safeBlog.thumbnail,
+      isAbsolute: safeBlog.thumbnail.startsWith('http'),
+      isRelative: safeBlog.thumbnail.startsWith('/'),
+      isDataUrl: safeBlog.thumbnail.startsWith('data:'),
+      urlLength: safeBlog.thumbnail.length
+    });
+  }
 
   return (
     <Layout>
@@ -457,7 +475,7 @@ function BlogInfo() {
           <div className={getReadingModeClass()}>
                 <div className="relative mb-8">
                     <div className="relative h-72 md:h-[450px] rounded-2xl overflow-hidden shadow-2xl group">
-                        <img alt="Blog thumbnail" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" src={getBlogs?.blogs?.thumbnail || getBlogs?.thumbnail || '/logo.png'} />
+                        <img alt="Blog thumbnail" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" src={getBlogs?.blogs?.thumbnail || getBlogs?.thumbnail || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
                         <div className="absolute top-4 left-4">
                             <span className="px-4 py-2 rounded-full text-sm font-bold bg-white/20 text-white backdrop-blur-sm border border-white/30">{getBlogs?.blogs?.category || 'General'}</span>
@@ -601,6 +619,103 @@ function BlogInfo() {
               ) : (
                 <p className="text-center py-10">No related posts found.</p>
               )}
+            </section>
+          )}
+          
+          {/* Debug Section - Only show in development */}
+          {process.env.NODE_ENV === 'development' && safeBlog && (
+            <section className="mt-16 p-6 bg-gray-100 dark:bg-gray-800 rounded-xl">
+              <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-white">🔧 Debug: Social Media Preview</h3>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Current Thumbnail:</p>
+                  <p className="text-sm text-gray-800 dark:text-white break-all">{safeBlog.thumbnail || 'No thumbnail'}</p>
+                  
+                  {/* Thumbnail Debug Info */}
+                  {safeBlog.thumbnail && (() => {
+                    const debugInfo = debugThumbnailUrl(safeBlog.thumbnail);
+                    return (
+                      <div className="mt-2 p-3 bg-white dark:bg-gray-700 rounded-lg">
+                        <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Thumbnail Analysis:</p>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div>
+                            <span className="font-medium">Empty:</span> 
+                            <span className={debugInfo.isEmpty ? 'text-red-600' : 'text-green-600'}> {debugInfo.isEmpty ? 'Yes' : 'No'}</span>
+                          </div>
+                          <div>
+                            <span className="font-medium">Data URL:</span> 
+                            <span className={debugInfo.isDataUrl ? 'text-red-600' : 'text-green-600'}> {debugInfo.isDataUrl ? 'Yes' : 'No'}</span>
+                          </div>
+                          <div>
+                            <span className="font-medium">Relative:</span> 
+                            <span className={debugInfo.isRelative ? 'text-yellow-600' : 'text-green-600'}> {debugInfo.isRelative ? 'Yes' : 'No'}</span>
+                          </div>
+                          <div>
+                            <span className="font-medium">Absolute:</span> 
+                            <span className={debugInfo.isAbsolute ? 'text-green-600' : 'text-red-600'}> {debugInfo.isAbsolute ? 'Yes' : 'No'}</span>
+                          </div>
+                          <div>
+                            <span className="font-medium">Firebase:</span> 
+                            <span className={debugInfo.isFirebase ? 'text-green-600' : 'text-gray-600'}> {debugInfo.isFirebase ? 'Yes' : 'No'}</span>
+                          </div>
+                          <div>
+                            <span className="font-medium">Valid Image:</span> 
+                            <span className={debugInfo.isValidImageUrl ? 'text-green-600' : 'text-red-600'}> {debugInfo.isValidImageUrl ? 'Yes' : 'No'}</span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">Length: {debugInfo.length} characters</p>
+                      </div>
+                    );
+                  })()}
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Meta Tag Validation:</p>
+                  {(() => {
+                    const { metaTags, validation } = validateMetaTags();
+                    return (
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <p className="font-medium">Title: <span className={validation.hasTitle ? 'text-green-600' : 'text-red-600'}>{validation.hasTitle ? '✓' : '✗'}</span></p>
+                            <p className="text-gray-600 dark:text-gray-400 truncate">{metaTags.title}</p>
+                          </div>
+                          <div>
+                            <p className="font-medium">Description: <span className={validation.hasDescription ? 'text-green-600' : 'text-red-600'}>{validation.hasDescription ? '✓' : '✗'}</span></p>
+                            <p className="text-gray-600 dark:text-gray-400 truncate">{metaTags.description}</p>
+                          </div>
+                          <div>
+                            <p className="font-medium">OG Image: <span className={validation.hasOgTags ? 'text-green-600' : 'text-red-600'}>{validation.hasOgTags ? '✓' : '✗'}</span></p>
+                            <p className="text-gray-600 dark:text-gray-400 truncate">{metaTags.ogImage}</p>
+                          </div>
+                          <div>
+                            <p className="font-medium">Twitter Image: <span className={validation.hasTwitterTags ? 'text-green-600' : 'text-red-600'}>{validation.hasTwitterTags ? '✓' : '✗'}</span></p>
+                            <p className="text-gray-600 dark:text-gray-400 truncate">{metaTags.twitterImage}</p>
+                          </div>
+                        </div>
+                        <div className="mt-2">
+                          <p className="font-medium">Overall Status: <span className={validation.isComplete ? 'text-green-600' : 'text-red-600'}>{validation.isComplete ? '✓ Complete' : '✗ Incomplete'}</span></p>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Test Social Media Previews:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(getSocialMediaTestLinks(window.location.href)).map(([platform, url]) => (
+                      <a 
+                        key={platform}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+                      >
+                        Test {platform.charAt(0).toUpperCase() + platform.slice(1)}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </section>
           )}
         </section>

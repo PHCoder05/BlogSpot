@@ -4,6 +4,99 @@
  */
 
 /**
+ * Validate meta tags and provide debugging information
+ * @param {string} url - The URL to check
+ * @returns {Object} Meta tag validation results
+ */
+export const validateMetaTags = () => {
+  const metaTags = {
+    title: document.title,
+    description: document.querySelector('meta[name="description"]')?.content || '',
+    ogTitle: document.querySelector('meta[property="og:title"]')?.content || '',
+    ogDescription: document.querySelector('meta[property="og:description"]')?.content || '',
+    ogImage: document.querySelector('meta[property="og:image"]')?.content || '',
+    ogType: document.querySelector('meta[property="og:type"]')?.content || '',
+    twitterCard: document.querySelector('meta[name="twitter:card"]')?.content || '',
+    twitterTitle: document.querySelector('meta[name="twitter:title"]')?.content || '',
+    twitterDescription: document.querySelector('meta[name="twitter:description"]')?.content || '',
+    twitterImage: document.querySelector('meta[name="twitter:image"]')?.content || ''
+  };
+  
+  const validation = {
+    hasTitle: !!metaTags.title,
+    hasDescription: !!metaTags.description,
+    hasOgTags: !!(metaTags.ogTitle && metaTags.ogDescription && metaTags.ogImage),
+    hasTwitterTags: !!(metaTags.twitterCard && metaTags.twitterTitle && metaTags.twitterDescription && metaTags.twitterImage),
+    isComplete: !!(metaTags.title && metaTags.description && metaTags.ogTitle && metaTags.ogDescription && metaTags.ogImage && metaTags.twitterCard && metaTags.twitterTitle && metaTags.twitterDescription && metaTags.twitterImage)
+  };
+  
+  return { metaTags, validation };
+};
+
+/**
+ * Generate social media preview test URLs for debugging
+ * @param {string} url - The URL to test
+ * @returns {Object} Test URLs for different platforms
+ */
+export const generateSocialPreviewTestUrls = (url) => {
+  return {
+    facebook: `https://developers.facebook.com/tools/debug/?q=${encodeURIComponent(url)}`,
+    twitter: `https://cards-dev.twitter.com/validator?url=${encodeURIComponent(url)}`,
+    linkedin: `https://www.linkedin.com/post-inspector/inspect/${encodeURIComponent(url)}`,
+    google: `https://search.google.com/test/rich-results?url=${encodeURIComponent(url)}`
+  };
+};
+
+/**
+ * Validate and optimize thumbnail URL for social media sharing
+ * @param {string} thumbnail - The thumbnail URL
+ * @param {string} fallbackUrl - Fallback URL if thumbnail is invalid
+ * @returns {string} Optimized thumbnail URL
+ */
+export const optimizeThumbnailForSocial = (thumbnail, fallbackUrl = 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80') => {
+  console.log('optimizeThumbnailForSocial input:', thumbnail);
+  
+  if (!thumbnail || thumbnail === '' || thumbnail === null || thumbnail === undefined) {
+    console.log('Thumbnail is empty, using fallback');
+    return fallbackUrl;
+  }
+  
+  // Handle data URLs (base64 images)
+  if (thumbnail.startsWith('data:')) {
+    console.log('Data URL detected, using fallback (data URLs not supported for social media)');
+    return fallbackUrl;
+  }
+  
+  // Handle Firebase Storage URLs
+  if (thumbnail.includes('firebasestorage.googleapis.com')) {
+    console.log('Firebase Storage URL detected:', thumbnail);
+    return thumbnail; // Firebase URLs are already absolute
+  }
+  
+  // Ensure thumbnail is a valid URL
+  if (thumbnail && !thumbnail.startsWith('http') && !thumbnail.startsWith('/')) {
+    console.log('Relative URL detected, adding slash prefix:', thumbnail);
+    thumbnail = `/${thumbnail}`;
+  }
+  
+  // Ensure thumbnail is an absolute URL for social media
+  if (thumbnail.startsWith('/')) {
+    console.log('Converting relative URL to absolute:', thumbnail);
+    thumbnail = `https://phcoder05.vercel.app${thumbnail}`;
+  }
+  
+  // Validate URL format
+  try {
+    new URL(thumbnail);
+    console.log('Valid URL detected:', thumbnail);
+    return thumbnail;
+  } catch (error) {
+    console.warn('Invalid thumbnail URL:', thumbnail, 'using fallback');
+    return fallbackUrl;
+  }
+};
+
+/**
  * Generate comprehensive SEO meta tags for blog posts
  * @param {Object} blog - Blog post data
  * @param {string} blog.title - Blog title
@@ -58,9 +151,12 @@ export const generateBlogSEOTags = (blog, currentUrl) => {
   const category = blog?.category || 'Technology';
   const title = blog?.title || 'Blog Post';
   
-  // Use the blog thumbnail - no fallback to Unsplash
-  const thumbnail = blog?.thumbnail || blog?.blogs?.thumbnail || '/logo.png';
-
+  // Enhanced thumbnail handling with better fallback and optimization
+  const thumbnail = optimizeThumbnailForSocial(
+    blog?.thumbnail || blog?.blogs?.thumbnail || '',
+    'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'
+  );
+  
   return {
     // Basic Meta Tags
     title: title,
@@ -76,7 +172,7 @@ export const generateBlogSEOTags = (blog, currentUrl) => {
     ogImage: thumbnail,
     ogImageWidth: '1200',
     ogImageHeight: '630',
-    ogImageAlt: title,
+    ogImageAlt: `${title} - Blog Post by ${author}`,
     ogUrl: currentUrl,
     ogSiteName: 'PHcoder05',
     ogLocale: 'en_US',
@@ -90,7 +186,7 @@ export const generateBlogSEOTags = (blog, currentUrl) => {
     twitterTitle: title,
     twitterDescription: engagingDescription,
     twitterImage: thumbnail,
-    twitterImageAlt: title,
+    twitterImageAlt: `${title} - Blog Post by ${author}`,
     twitterSite: '@phcoder05',
     twitterCreator: '@phcoder05',
     
@@ -121,7 +217,7 @@ export const generateBlogSEOTags = (blog, currentUrl) => {
         "name": "PHcoder05",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://phcoder05.vercel.app/logo.png"
+          "url": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
         }
       },
       "datePublished": blog?.date,
