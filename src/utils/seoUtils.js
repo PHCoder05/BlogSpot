@@ -26,6 +26,9 @@ export const generateBlogSEOTags = (blog, currentUrl) => {
   // Use the blog thumbnail if available, otherwise use a better default
   const defaultThumbnail = 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80';
   const thumbnail = blog?.thumbnail || blog?.blogs?.thumbnail || defaultThumbnail;
+  
+  // Optimize thumbnail for social sharing
+  const optimizedThumbnail = optimizeThumbnail(thumbnail);
 
   return {
     // Basic Meta Tags
@@ -39,9 +42,9 @@ export const generateBlogSEOTags = (blog, currentUrl) => {
     ogType: 'article',
     ogTitle: title,
     ogDescription: cleanContent,
-    ogImage: thumbnail,
-    ogImageWidth: '1200',
-    ogImageHeight: '630',
+    ogImage: optimizedThumbnail.url,
+    ogImageWidth: optimizedThumbnail.width.toString(),
+    ogImageHeight: optimizedThumbnail.height.toString(),
     ogImageAlt: title,
     ogUrl: currentUrl,
     ogSiteName: 'PHcoder05',
@@ -55,7 +58,7 @@ export const generateBlogSEOTags = (blog, currentUrl) => {
     twitterCard: 'summary_large_image',
     twitterTitle: title,
     twitterDescription: cleanContent,
-    twitterImage: thumbnail,
+    twitterImage: optimizedThumbnail.url,
     twitterImageAlt: title,
     twitterSite: '@phcoder05',
     twitterCreator: '@phcoder05',
@@ -71,23 +74,17 @@ export const generateBlogSEOTags = (blog, currentUrl) => {
       "@type": "BlogPosting",
       "headline": title,
       "description": cleanContent,
-      "image": {
-        "@type": "ImageObject",
-        "url": thumbnail,
-        "width": 1200,
-        "height": 630
-      },
+      "image": optimizedThumbnail.url,
       "author": {
         "@type": "Person",
-        "name": author,
-        "url": "https://phcoder05.vercel.app/"
+        "name": author
       },
       "publisher": {
         "@type": "Organization",
         "name": "PHcoder05",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+          "url": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
         }
       },
       "datePublished": blog?.date,
@@ -96,10 +93,8 @@ export const generateBlogSEOTags = (blog, currentUrl) => {
         "@type": "WebPage",
         "@id": currentUrl
       },
-      "articleSection": category,
       "keywords": tags,
-      "wordCount": blog?.content?.replace(/<[^>]*>/g, '').split(' ').length || 0,
-      "timeRequired": `PT${Math.ceil((blog?.content?.split(' ').length || 0) / 200)}M`
+      "articleSection": category
     }
   };
 };
@@ -506,6 +501,25 @@ export const optimizeThumbnail = (imageUrl, width = 1200, height = 630) => {
     } else if (!imageUrl.startsWith('http')) {
       // If it's not a full URL, assume it's a relative path
       processedUrl = `${window.location.origin}/${imageUrl}`;
+    }
+  }
+
+  // Ensure the URL is properly encoded
+  try {
+    processedUrl = encodeURI(processedUrl);
+  } catch (error) {
+    console.warn('Failed to encode image URL:', processedUrl, error);
+  }
+
+  // Add image optimization parameters for better social sharing
+  if (processedUrl.includes('unsplash.com') || processedUrl.includes('images.unsplash.com')) {
+    // For Unsplash images, add optimization parameters
+    const separator = processedUrl.includes('?') ? '&' : '?';
+    processedUrl = `${processedUrl}${separator}auto=format&fit=crop&w=${width}&h=${height}&q=80`;
+  } else if (processedUrl.includes('firebasestorage.googleapis.com')) {
+    // For Firebase Storage images, ensure proper access
+    if (!processedUrl.includes('alt=media')) {
+      processedUrl = `${processedUrl}?alt=media`;
     }
   }
 

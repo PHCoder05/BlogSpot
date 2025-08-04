@@ -513,6 +513,7 @@ function BlogInfo() {
                            description={getBlogs?.blogs?.content?.replace(/<[^>]*>/g, '').slice(0, 160)}
                            image={getBlogs?.blogs?.thumbnail || getBlogs?.thumbnail}
                            hashtags={getBlogs?.blogs?.tags || ['technology', 'programming', 'blog']}
+                           blog={getBlogs}
                        />
                        {user?.role === 'admin' && <button onClick={() => setIsEditing(!isEditing)} className={`p-2 rounded-lg ${mode === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}><FaEdit className="text-blue-500"/></button>}
                     </div>
