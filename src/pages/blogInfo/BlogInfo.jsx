@@ -368,27 +368,6 @@ function BlogInfo() {
     setActiveSection(id);
   };
   
-  if (loading || !getBlogs) {
-    return (
-      <Layout>
-        <div className="flex justify-center items-center h-screen">
-          <Loader />
-        </div>
-      </Layout>
-    );
-  }
-
-  // Debug logging to identify Symbol values
-  console.log('BlogInfo render - getBlogs:', getBlogs);
-  if (getBlogs?.blogs?.tags && Array.isArray(getBlogs.blogs.tags)) {
-    console.log('Blog tags:', getBlogs.blogs.tags);
-    getBlogs.blogs.tags.forEach((tag, index) => {
-      if (typeof tag === 'symbol') {
-        console.error('Symbol found in tags at index:', index, tag);
-      }
-    });
-  }
-
   // Create safe blog object
   const safeBlog = getBlogs && typeof getBlogs === 'object' ? {
     title: getBlogs.blogs?.title || '',
@@ -428,7 +407,7 @@ function BlogInfo() {
     blog: safeBlog,
     currentUrl: window.location.href
   });
-  
+
   // Test if meta tags are actually in the DOM
   useEffect(() => {
     if (process.env.NODE_ENV === 'development' && safeBlog) {
@@ -441,6 +420,16 @@ function BlogInfo() {
       }, 1000);
     }
   }, [safeBlog]);
+
+  if (loading || !getBlogs) {
+    return (
+      <Layout>
+        <div className="flex justify-center items-center h-screen">
+          <Loader />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>

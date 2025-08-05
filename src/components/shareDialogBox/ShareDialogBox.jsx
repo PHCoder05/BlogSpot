@@ -149,6 +149,21 @@ function ShareDialogBox({ title, url, description, image, hashtags = [], isOpen,
         pinterestShareUrl = `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(fallbackUrl)}&description=${encodeURIComponent(currentTitle)}`;
     }
 
+    // Debug: Log share data and URLs
+    console.log('Share Dialog Debug Info:');
+    console.log('- Current URL:', currentUrl);
+    console.log('- Current Title:', currentTitle);
+    console.log('- Current Description:', currentDescription);
+    console.log('- Current Image:', currentImage);
+    console.log('- Optimized Hashtags:', optimizedHashtags);
+    console.log('- Facebook Share URL:', facebookShareUrl);
+    console.log('- Twitter Share URL:', twitterShareUrl);
+    console.log('- LinkedIn Share URL:', linkedinShareUrl);
+    console.log('- WhatsApp Share URL:', whatsappShareUrl);
+    console.log('- Telegram Share URL:', telegramShareUrl);
+    console.log('- Reddit Share URL:', redditShareUrl);
+    console.log('- Pinterest Share URL:', pinterestShareUrl);
+
     // Native Web Share API (for mobile devices)
     const handleNativeShare = async () => {
         if (navigator.share) {
@@ -173,13 +188,49 @@ function ShareDialogBox({ title, url, description, image, hashtags = [], isOpen,
     };
 
     const handleShare = (shareUrl, platform) => {
-        window.open(shareUrl, '_blank', 'width=600,height=400');
-        setToast({
-            message: `Shared on ${platform}!`,
-            type: 'success',
-            duration: 2000
-        });
-        console.log(`Shared on ${platform}`);
+        try {
+            console.log(`Sharing on ${platform} with URL:`, shareUrl);
+            
+            // Test if the URL is valid
+            if (!shareUrl || shareUrl === '') {
+                console.error(`Invalid share URL for ${platform}`);
+                setToast({
+                    message: `Failed to share on ${platform} - Invalid URL`,
+                    type: 'error',
+                    duration: 3000
+                });
+                return;
+            }
+            
+            // Open in new window with proper dimensions
+            const windowFeatures = 'width=600,height=400,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no';
+            const shareWindow = window.open(shareUrl, '_blank', windowFeatures);
+            
+            if (shareWindow) {
+                setToast({
+                    message: `Shared on ${platform}!`,
+                    type: 'success',
+                    duration: 2000
+                });
+                console.log(`Successfully opened ${platform} share window`);
+            } else {
+                // If popup is blocked, try to open in same window
+                console.warn(`Popup blocked for ${platform}, opening in same window`);
+                window.location.href = shareUrl;
+                setToast({
+                    message: `Opening ${platform} in new tab...`,
+                    type: 'info',
+                    duration: 2000
+                });
+            }
+        } catch (error) {
+            console.error(`Error sharing on ${platform}:`, error);
+            setToast({
+                message: `Failed to share on ${platform}`,
+                type: 'error',
+                duration: 3000
+            });
+        }
     };
 
     const handleCopyLink = async () => {
