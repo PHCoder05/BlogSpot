@@ -13,7 +13,7 @@ import toast from 'react-hot-toast';
 import { FacebookShareButton, TwitterShareButton, LinkedinShareButton, WhatsappShareButton, FacebookIcon, TwitterIcon, LinkedinIcon, WhatsappIcon } from 'react-share';
 import { 
   FaCopy, FaCode, FaEdit, FaEye, FaClock, FaUser, FaCalendar, FaTags, 
-  FaHeart, FaBookmark, FaShare, FaPrint, FaArrowUp, FaComment, 
+  FaHeart, FaBookmark, FaShareAlt, FaPrint, FaArrowUp, FaComment, 
   FaThumbsUp, FaThumbsDown, FaBookOpen, FaStar, FaDownload, FaLink,
   FaEllipsisH, FaTimes, FaCheck, FaPencilAlt, FaTrash, FaReply, FaListUl, FaExpand, FaCompress, FaTextHeight
 } from 'react-icons/fa';

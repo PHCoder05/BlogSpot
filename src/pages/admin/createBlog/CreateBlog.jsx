@@ -783,6 +783,10 @@ console.log(greet('World'));</code></pre>
             }
             
             setImage(file);
+            // Clear URL when file is uploaded
+            setImageUrl('');
+            setUploadMethod('file');
+            toast.success("Image uploaded successfully!");
         }
     };
 
@@ -806,11 +810,20 @@ console.log(greet('World'));</code></pre>
         const hasImageExtension = imageExtensions.some(ext => url.includes(ext));
         
         if (!hasImageExtension && !url.includes('data:image/')) {
-            toast.warning("URL might not be an image. Please ensure it's a valid image URL.");
+            toast("⚠️ URL might not be an image. Please ensure it's a valid image URL.", {
+                icon: '⚠️',
+                style: {
+                    border: '1px solid #f59e0b',
+                    padding: '16px',
+                    color: '#92400e',
+                    backgroundColor: '#fef3c7',
+                },
+            });
         }
         
         // Clear any uploaded file when using URL
         setImage(null);
+        setUploadMethod('link');
         toast.success("Image URL set successfully!");
     };
 
@@ -828,7 +841,7 @@ console.log(greet('World'));</code></pre>
             metaTitle: title.length > 60 ? title.substring(0, 60) + '...' : title,
             metaDescription: content.length > 160 ? content.substring(0, 160) + '...' : content,
             keywords: tags.join(', '),
-            canonicalUrl: `https://yourdomain.com/blog/${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+            canonicalUrl: `https://blog-phcoder05.vercel.app/blog/${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
         });
         
         toast.success("SEO data generated successfully!");
@@ -1114,26 +1127,37 @@ console.log(greet('World'));</code></pre>
                                     </Typography>
                                     
                                     {/* Thumbnail Preview */}
-                                    {(image || imageUrl) && (
+                                    {(image || (imageUrl && imageUrl.trim())) && (
                                         <div className="mb-4 relative">
                                             <img 
                                                 className="w-full max-h-64 object-cover rounded-lg border-2 border-gray-300"
-                                                src={image ? URL.createObjectURL(image) : imageUrl}
+                                                src={image ? URL.createObjectURL(image) : imageUrl.trim()}
                                                 alt="thumbnail preview"
                                                 onError={(e) => {
                                                     e.target.style.display = 'none';
-                                                    toast.error("Invalid image URL");
+                                                    if (image) {
+                                                        toast.error("Failed to load uploaded image");
+                                                    } else {
+                                                        toast.error("Invalid image URL - please check the URL");
+                                                    }
+                                                }}
+                                                onLoad={(e) => {
+                                                    e.target.style.display = 'block';
                                                 }}
                                             />
                                             <button
                                                 onClick={() => {
                                                     setImage(null);
                                                     setImageUrl('');
+                                                    toast.info("Thumbnail removed");
                                                 }}
                                                 className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 transition-colors"
                                             >
                                                 ×
                                             </button>
+                                            <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
+                                                {image ? "Uploaded Image" : "URL Image"}
+                                            </div>
                                         </div>
                                     )}
                                     
@@ -1202,7 +1226,13 @@ console.log(greet('World'));</code></pre>
                                                 <input
                                                     type="url"
                                                     value={imageUrl}
-                                                    onChange={(e) => setImageUrl(e.target.value)}
+                                                    onChange={(e) => {
+                                                        setImageUrl(e.target.value);
+                                                        // Clear uploaded file when URL is being typed
+                                                        if (e.target.value.trim()) {
+                                                            setImage(null);
+                                                        }
+                                                    }}
                                                     placeholder="https://example.com/image.jpg"
                                                     onBlur={() => {
                                                         if (imageUrl.trim()) {
@@ -1220,7 +1250,17 @@ console.log(greet('World'));</code></pre>
                                                             const hasImageExtension = imageExtensions.some(ext => url.includes(ext));
                                                             
                                                             if (!hasImageExtension && !url.includes('data:image/')) {
-                                                                toast.warning("URL might not be an image. Please ensure it's a valid image URL.");
+                                                                toast("⚠️ URL might not be an image. Please ensure it's a valid image URL.", {
+                                                                    icon: '⚠️',
+                                                                    style: {
+                                                                        border: '1px solid #f59e0b',
+                                                                        padding: '16px',
+                                                                        color: '#92400e',
+                                                                        backgroundColor: '#fef3c7',
+                                                                    },
+                                                                });
+                                                            } else {
+                                                                toast.success("Image URL validated successfully!");
                                                             }
                                                         }
                                                     }}
@@ -1564,14 +1604,17 @@ console.log(greet('World'));</code></pre>
                                                     </div>
                                                     
                                                     {/* Thumbnail Preview */}
-                                                    {(image || imageUrl) && (
+                                                    {(image || (imageUrl && imageUrl.trim())) && (
                                                         <div className="mb-4">
                                                             <img 
                                                                 className="w-full h-48 object-cover rounded-lg"
-                                                                src={image ? URL.createObjectURL(image) : imageUrl}
+                                                                src={image ? URL.createObjectURL(image) : imageUrl.trim()}
                                                                 alt="blog thumbnail"
                                                                 onError={(e) => {
                                                                     e.target.style.display = 'none';
+                                                                }}
+                                                                onLoad={(e) => {
+                                                                    e.target.style.display = 'block';
                                                                 }}
                                                             />
                                                         </div>
@@ -1812,8 +1855,8 @@ console.log(greet('World'));</code></pre>
                                         </div>
                                         <div className="flex justify-between">
                                             <span style={{ color: mode === 'dark' ? 'white' : 'black' }}>Thumbnail:</span>
-                                            <span className={(image || imageUrl) ? 'text-green-500' : 'text-red-500'}>
-                                                {(image || imageUrl) ? '✓ Complete' : '✗ Required'}
+                                            <span className={(image || (imageUrl && imageUrl.trim())) ? 'text-green-500' : 'text-red-500'}>
+                                                {(image || (imageUrl && imageUrl.trim())) ? '✓ Complete' : '✗ Required'}
                                             </span>
                                         </div>
                                         <div className="flex justify-between">
@@ -1832,11 +1875,11 @@ console.log(greet('World'));</code></pre>
                                             <div className="flex justify-between font-semibold">
                                                 <span style={{ color: mode === 'dark' ? 'white' : 'black' }}>Overall:</span>
                                                 <span className={
-                                                    blogs.title && (image || imageUrl) && blogs.category && 
+                                                    blogs.title && (image || (imageUrl && imageUrl.trim())) && blogs.category && 
                                                     blogs.content && blogs.content !== '<p><br></p>' 
                                                         ? 'text-green-500' : 'text-yellow-500'
                                                 }>
-                                                    {blogs.title && (image || imageUrl) && blogs.category && 
+                                                    {blogs.title && (image || (imageUrl && imageUrl.trim())) && blogs.category && 
                                                      blogs.content && blogs.content !== '<p><br></p>' 
                                                         ? '✓ Ready to Publish' : '⚠ Needs Completion'}
                                                 </span>

@@ -24,6 +24,8 @@ import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import Unsubscribe from "./pages/Unsubscribe";
 import EmailTest from "./components/EmailTest";
+import NewsletterTest from "./components/NewsletterTest";
+import EmailTestAdvanced from "./components/EmailTestAdvanced";
 
 import React, { useEffect } from "react";
 import { suppressQuillWarnings } from "./utils/quillWarningSuppression";
@@ -93,6 +95,22 @@ function App() {
             element={
               <ProtectedRouteForAdmin>
                 <AccessCodeManager />
+              </ProtectedRouteForAdmin>
+            }
+          />
+          <Route
+            path="/newsletter-test"
+            element={
+              <ProtectedRouteForAdmin>
+                <NewsletterTest />
+              </ProtectedRouteForAdmin>
+            }
+          />
+          <Route
+            path="/email-test-advanced"
+            element={
+              <ProtectedRouteForAdmin>
+                <EmailTestAdvanced />
               </ProtectedRouteForAdmin>
             }
           />

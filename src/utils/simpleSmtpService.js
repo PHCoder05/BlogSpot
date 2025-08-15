@@ -1,5 +1,6 @@
 // Simple SMTP Service - Direct email sending without third-party dependencies
 // Uses native SMTP protocol to send emails directly
+import { emailConfig, getSenderInfo } from '../config/emailConfig';
 
 export class SimpleSmtpService {
   
@@ -25,8 +26,9 @@ export class SimpleSmtpService {
         }
       };
       
+      const senderInfo = getSenderInfo();
       const emailData = {
-        from: smtpConfig.auth.user,
+        from: senderInfo.formattedLong,
         to: to,
         subject: subject,
         html: html,
@@ -124,7 +126,7 @@ export class SimpleSmtpService {
    * @returns {Promise<boolean>}
    */
   static async sendWelcomeEmail(to) {
-    const subject = '🎉 Welcome to PHcoder Newsletter!';
+    const subject = emailConfig.subjects.welcome;
     const html = this.generateWelcomeEmailHTML(to);
     return await this.sendEmail(to, subject, html);
   }

@@ -8,9 +8,10 @@ import {
   FaChartBar, FaNewspaper, FaCalendarAlt, FaClock, FaTags, FaFolder,
   FaSort, FaSortUp, FaSortDown, FaThumbsUp, FaEyeSlash, FaDownload,
   FaCog, FaBell, FaUser, FaEnvelope, FaGlobe, FaRocket, FaFire, FaImage,
-  FaKey
+  FaKey, FaToggleOn, FaToggleOff
 } from 'react-icons/fa';
 import SEOComponent from '../../../components/SEOComponent';
+import AdminPanel from '../../../components/admin/AdminPanel';
 import toast from 'react-hot-toast';
 
 function Dashboard() {
@@ -26,6 +27,7 @@ function Dashboard() {
   const [selectedBlogs, setSelectedBlogs] = useState([]);
   const [showStats, setShowStats] = useState(true);
   const [viewMode, setViewMode] = useState('table'); // 'table' or 'grid'
+  const [useAdvancedPanel, setUseAdvancedPanel] = useState(false);
 
   const logout = () => {
     localStorage.removeItem("admin");
@@ -124,6 +126,20 @@ function Dashboard() {
     }
   };
 
+  // Conditionally render based on panel mode
+  if (useAdvancedPanel) {
+    return (
+      <>
+        <SEOComponent 
+          type="admin"
+          currentUrl={window.location.href}
+          pageType="dashboard"
+        />
+        <AdminPanel getAllBlog={getAllBlog} deleteBlogs={deleteBlogs} />
+      </>
+    );
+  }
+
   return (
     <>
       <SEOComponent 
@@ -209,6 +225,28 @@ function Dashboard() {
                         Access Codes
                       </Button>
                     </Link>
+                    <Link to="/newsletter-test">
+                      <Button
+                        className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                        size="sm"
+                      >
+                        <FaEnvelope />
+                        Test Newsletter
+                      </Button>
+                    </Link>
+                    <Button
+                      variant={useAdvancedPanel ? "filled" : "outlined"}
+                      size="sm"
+                      onClick={() => setUseAdvancedPanel(!useAdvancedPanel)}
+                      className={`flex items-center gap-2 transition-all duration-300 transform hover:-translate-y-1 ${
+                        useAdvancedPanel
+                          ? 'bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-lg'
+                          : 'text-purple-500 border-purple-500 hover:bg-purple-50 hover:border-purple-600'
+                      }`}
+                    >
+                      {useAdvancedPanel ? <FaToggleOn /> : <FaToggleOff />}
+                      Advanced Panel
+                    </Button>
                     <Button
                       variant="outlined"
                       size="sm"
@@ -243,7 +281,7 @@ function Dashboard() {
                         </div>
                       </div>
                       <div className="p-4 bg-gradient-to-br from-teal-500 to-blue-500 rounded-full shadow-lg">
-                        <FaNewspaper className="text-white text-2xl" />
+                                                        <FaNewspaper className="text-white text-2xl" />
                       </div>
                     </div>
                   </CardBody>

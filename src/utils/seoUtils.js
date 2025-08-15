@@ -82,7 +82,7 @@ export const optimizeThumbnailForSocial = (thumbnail, fallbackUrl = 'https://ima
   // Ensure thumbnail is an absolute URL for social media
   if (thumbnail.startsWith('/')) {
     console.log('Converting relative URL to absolute:', thumbnail);
-    thumbnail = `https://phcoder05.vercel.app${thumbnail}`;
+    thumbnail = `https://blog-phcoder05.vercel.app${thumbnail}`;
   }
   
   // Validate URL format
@@ -174,7 +174,7 @@ export const generateBlogSEOTags = (blog, currentUrl) => {
     ogImageHeight: '630',
     ogImageAlt: `${title} - Blog Post by ${author}`,
     ogUrl: currentUrl,
-    ogSiteName: 'PHcoder05',
+    ogSiteName: 'BlogSpot - Tech Blog & Programming Tutorials',
     ogLocale: 'en_US',
     articleAuthor: author,
     articlePublishedTime: blog?.date,
@@ -210,11 +210,11 @@ export const generateBlogSEOTags = (blog, currentUrl) => {
       "author": {
         "@type": "Person",
         "name": author,
-        "url": "https://phcoder05.vercel.app/"
+        "url": "https://blog-phcoder05.vercel.app/"
       },
       "publisher": {
         "@type": "Organization",
-        "name": "PHcoder05",
+        "name": "BlogSpot - Tech Blog & Programming Tutorials",
         "logo": {
           "@type": "ImageObject",
           "url": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
@@ -253,7 +253,7 @@ export const generateHomeSEOTags = (currentUrl) => {
     ogDescription: 'Explore insightful technology blogs, programming tutorials, DevOps guides, and development tips.',
     ogImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     ogUrl: currentUrl,
-    ogSiteName: 'PHcoder05',
+    ogSiteName: 'BlogSpot - Tech Blog & Programming Tutorials',
     ogLocale: 'en_US',
     
     // Twitter Card
@@ -278,11 +278,11 @@ export const generateHomeSEOTags = (currentUrl) => {
         "@type": "Person",
         "name": "Pankaj Hadole",
         "jobTitle": "Software Developer",
-        "url": "https://phcoder05.vercel.app/"
+        "url": "https://blog-phcoder05.vercel.app/"
       },
       "publisher": {
         "@type": "Organization",
-        "name": "PHcoder05",
+        "name": "BlogSpot - Tech Blog & Programming Tutorials",
         "logo": {
           "@type": "ImageObject",
           "url": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
@@ -320,7 +320,7 @@ export const generateAllBlogsSEOTags = (currentUrl, totalBlogs = 0, selectedCate
     ogDescription: `Explore ${totalBlogs} articles on programming, cloud computing, DevOps, and technology.`,
     ogImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     ogUrl: currentUrl,
-    ogSiteName: 'PHcoder05',
+    ogSiteName: 'BlogSpot - Tech Blog & Programming Tutorials',
     ogLocale: 'en_US',
     
     // Twitter Card
@@ -344,7 +344,7 @@ export const generateAllBlogsSEOTags = (currentUrl, totalBlogs = 0, selectedCate
       "numberOfItems": totalBlogs,
       "publisher": {
         "@type": "Organization",
-        "name": "PHcoder05",
+        "name": "BlogSpot - Tech Blog & Programming Tutorials",
         "logo": {
           "@type": "ImageObject",
           "url": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
@@ -374,7 +374,7 @@ export const generateAboutSEOTags = (currentUrl, totalBlogs = 0) => {
     ogDescription: 'Learn about PHcoder05, a technology blog focused on programming tutorials, cloud computing, DevOps, and software development.',
     ogImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     ogUrl: currentUrl,
-    ogSiteName: 'PHcoder05',
+    ogSiteName: 'BlogSpot - Tech Blog & Programming Tutorials',
     ogLocale: 'en_US',
     
     // Twitter Card
@@ -430,7 +430,7 @@ export const generateLoginSEOTags = (currentUrl) => {
     ogDescription: 'Login to your PHcoder05 account to access personalized features.',
     ogImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     ogUrl: currentUrl,
-    ogSiteName: 'PHcoder05',
+    ogSiteName: 'BlogSpot - Tech Blog & Programming Tutorials',
     ogLocale: 'en_US',
     
     // Twitter Card
@@ -478,7 +478,7 @@ export const generateSignupSEOTags = (currentUrl) => {
     ogDescription: 'Create your PHcoder05 account to bookmark articles and engage with the community.',
     ogImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     ogUrl: currentUrl,
-    ogSiteName: 'PHcoder05',
+    ogSiteName: 'BlogSpot - Tech Blog & Programming Tutorials',
     ogLocale: 'en_US',
     
     // Twitter Card
@@ -543,7 +543,7 @@ export const generateAdminSEOTags = (currentUrl, pageType = 'dashboard') => {
     ogDescription: pageDescriptions[pageType] || 'Admin panel for PHcoder05 blog management.',
     ogImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     ogUrl: currentUrl,
-    ogSiteName: 'PHcoder05',
+    ogSiteName: 'BlogSpot - Tech Blog & Programming Tutorials',
     ogLocale: 'en_US',
     
     // Twitter Card
@@ -782,7 +782,7 @@ export const generate404SEOTags = (currentUrl) => {
     ogDescription: 'The page you are looking for does not exist. Play our memory game while you\'re here.',
     ogImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     ogUrl: currentUrl,
-    ogSiteName: 'PHcoder05',
+    ogSiteName: 'BlogSpot - Tech Blog & Programming Tutorials',
     ogLocale: 'en_US',
     
     // Twitter Card
@@ -805,8 +805,8 @@ export const generate404SEOTags = (currentUrl) => {
       "url": currentUrl,
       "isPartOf": {
         "@type": "WebSite",
-        "name": "PHcoder05",
-        "url": "https://phcoder05.vercel.app/"
+        "name": "BlogSpot - Tech Blog & Programming Tutorials",
+        "url": "https://blog-phcoder05.vercel.app/"
       }
     }
   };
@@ -831,7 +831,7 @@ export const generateUnsubscribeSEOTags = (currentUrl) => {
     ogDescription: 'Unsubscribe from our newsletter. We\'re sorry to see you go, but you can always resubscribe later.',
     ogImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     ogUrl: currentUrl,
-    ogSiteName: 'PHcoder05',
+    ogSiteName: 'BlogSpot - Tech Blog & Programming Tutorials',
     ogLocale: 'en_US',
     
     // Twitter Card

@@ -1,5 +1,6 @@
 // Real Email Service using EmailJS
 // This service can actually send real emails
+import { emailConfig, getSenderInfo } from '../config/emailConfig';
 
 export class RealEmailService {
   
@@ -42,13 +43,14 @@ export class RealEmailService {
       // 3. Create an email template
       // 4. Use the service ID, template ID, and public key
       
+      const senderInfo = getSenderInfo();
       const emailData = {
         to_email: to,
-        from_name: 'PHcoder Blog',
-        from_email: 'phcoder.blog@gmail.com',
+        from_name: senderInfo.displayName,
+        from_email: senderInfo.email,
         subject: subject,
         message: html,
-        reply_to: 'phcoder.blog@gmail.com'
+        reply_to: senderInfo.email
       };
       
       console.log('📧 Email data prepared:', {
@@ -80,7 +82,7 @@ export class RealEmailService {
    * @returns {Promise<boolean>}
    */
   static async sendWelcomeEmail(to) {
-    const subject = '🎉 Welcome to PHcoder Newsletter!';
+    const subject = emailConfig.subjects.welcome;
     const html = this.generateWelcomeEmailHTML(to);
     return await this.sendEmail(to, subject, html);
   }

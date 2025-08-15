@@ -89,10 +89,13 @@ function EditBlog() {
             time: Timestamp.now(),
           });
           
-          setCurrentThumbnail(blogData.thumbnail || null);
+          // Handle thumbnail from both possible locations
+          const thumbnailData = blogData.thumbnail || blogContent.thumbnail || null;
+          setCurrentThumbnail(thumbnailData);
+          
           // Check if the current thumbnail is a URL (starts with http)
-          if (blogData.thumbnail && blogData.thumbnail.startsWith('http')) {
-            setThumbnailLink(blogData.thumbnail);
+          if (thumbnailData && thumbnailData.startsWith('http')) {
+            setThumbnailLink(thumbnailData);
             setUseThumbnailLink(true);
           }
           setTags(blogContent.tags || []);
@@ -111,6 +114,8 @@ function EditBlog() {
 
     fetchBlog();
   }, [id, navigate]);
+
+
 
   const handleTagInputChange = (event) => {
     setTagInput(event.target.value);
@@ -159,8 +164,22 @@ function EditBlog() {
         return;
       }
       
+      // Set the file immediately for preview
       setThumbnail(file);
+      // Clear other thumbnail sources when uploading new file
+      setCurrentThumbnail(null);
+      setThumbnailLink("");
+      setUseThumbnailLink(false);
+      
+      toast.success("Image uploaded successfully!");
     }
+  };
+
+  const clearCurrentThumbnail = () => {
+    setCurrentThumbnail(null);
+    setThumbnailLink("");
+    setUseThumbnailLink(false);
+    setThumbnail(null);
   };
 
   const validateImageUrl = (url) => {
@@ -181,7 +200,15 @@ function EditBlog() {
     const hasImageExtension = imageExtensions.some(ext => urlLower.includes(ext));
     
     if (!hasImageExtension && !urlLower.includes('data:image/')) {
-      toast.warning("URL might not be an image. Please ensure it's a valid image URL.");
+      toast("⚠️ URL might not be an image. Please ensure it's a valid image URL.", {
+        icon: '⚠️',
+        style: {
+          border: '1px solid #f59e0b',
+          padding: '16px',
+          color: '#92400e',
+          backgroundColor: '#fef3c7',
+        },
+      });
     }
     
     return true;
@@ -279,7 +306,7 @@ function EditBlog() {
       metaTitle: title.length > 60 ? title.substring(0, 60) + '...' : title,
       metaDescription: content.length > 160 ? content.substring(0, 160) + '...' : content,
       keywords: tags.join(', '),
-      canonicalUrl: `https://yourdomain.com/blog/${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+      canonicalUrl: `https://blog-phcoder05.vercel.app/blog/${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
     });
     
     toast.success("SEO data generated successfully!");
@@ -433,12 +460,28 @@ function EditBlog() {
           </Typography>
           
           {/* Current Thumbnail Display */}
-          {currentThumbnail && !useThumbnailLink && (
+          {currentThumbnail && (
             <div className="mb-3 relative">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium" style={{ color: mode === "dark" ? "white" : "black" }}>
+                  Current Thumbnail
+                </span>
+                <button
+                  onClick={clearCurrentThumbnail}
+                  className="text-red-500 hover:text-red-700 text-sm"
+                  title="Remove current thumbnail"
+                >
+                  ×
+                </button>
+              </div>
               <img 
                 className="w-full max-h-64 object-cover rounded-lg border-2 border-gray-300"
                 src={currentThumbnail} 
                 alt="current thumbnail" 
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  toast.error("Failed to load current thumbnail");
+                }}
               />
             </div>
           )}
@@ -454,6 +497,7 @@ function EditBlog() {
                   onChange={() => {
                     setUseThumbnailLink(false);
                     setThumbnailLink("");
+                    // Keep current thumbnail if switching back to upload mode
                   }}
                   className="mr-2"
                 />
@@ -467,6 +511,10 @@ function EditBlog() {
                   onChange={() => {
                     setUseThumbnailLink(true);
                     setThumbnail(null);
+                    // Set thumbnail link to current thumbnail if it's a URL
+                    if (currentThumbnail && currentThumbnail.startsWith('http')) {
+                      setThumbnailLink(currentThumbnail);
+                    }
                   }}
                   className="mr-2"
                 />
@@ -484,9 +532,16 @@ function EditBlog() {
                     className="w-full max-h-64 object-cover rounded-lg border-2 border-gray-300"
                     src={URL.createObjectURL(thumbnail)}
                     alt="thumbnail preview"
+                    onError={(e) => {
+                      console.error("Error loading uploaded thumbnail:", e);
+                      toast.error("Failed to load uploaded image");
+                    }}
                   />
                   <button
-                    onClick={() => setThumbnail(null)}
+                    onClick={() => {
+                      setThumbnail(null);
+                      toast.info("Uploaded image removed");
+                    }}
                     className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
                   >
                     ×
@@ -531,7 +586,14 @@ function EditBlog() {
                 }`}
                 placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
                 value={thumbnailLink}
-                onChange={(e) => setThumbnailLink(e.target.value)}
+                onChange={(e) => {
+                  setThumbnailLink(e.target.value);
+                  // Clear uploaded file and current thumbnail when URL is being used
+                  if (e.target.value.trim()) {
+                    setThumbnail(null);
+                    setCurrentThumbnail(null);
+                  }
+                }}
                 onBlur={() => {
                   if (thumbnailLink.trim()) {
                     validateImageUrl(thumbnailLink);
@@ -553,6 +615,66 @@ function EditBlog() {
               )}
             </div>
           )}
+          
+          {/* Thumbnail Preview Section */}
+          <div className="mt-4 p-4 border-2 border-dashed border-gray-300 rounded-lg" style={{
+            background: mode === "dark" ? "#2d3748" : "#f7fafc"
+          }}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-semibold" style={{ color: mode === "dark" ? "white" : "black" }}>
+                Thumbnail Preview
+              </span>
+              <div className={`w-2 h-2 rounded-full ${(currentThumbnail || thumbnail || thumbnailLink) ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+            </div>
+            
+            {(currentThumbnail || thumbnail || (thumbnailLink && thumbnailLink.trim())) ? (
+              <div className="relative">
+                <img 
+                  className="w-full max-h-48 object-cover rounded-lg border-2 border-gray-300"
+                  src={
+                    thumbnail 
+                      ? URL.createObjectURL(thumbnail) 
+                      : thumbnailLink && thumbnailLink.trim()
+                        ? thumbnailLink.trim()
+                        : currentThumbnail
+                  }
+                  alt="thumbnail preview"
+                  onError={(e) => {
+                    console.log("Thumbnail preview error:", e.target.src);
+                    e.target.style.display = 'none';
+                    
+                    // Show appropriate error message based on source type
+                    if (thumbnail) {
+                      toast.error("Failed to load uploaded image");
+                    } else if (thumbnailLink && thumbnailLink.trim()) {
+                      toast.error("Failed to load image from URL - please check the URL");
+                    } else if (currentThumbnail) {
+                      toast.error("Failed to load existing thumbnail");
+                    } else {
+                      toast.error("Failed to load thumbnail preview");
+                    }
+                  }}
+                  onLoad={(e) => {
+                    // Successfully loaded, ensure it's visible
+                    e.target.style.display = 'block';
+                  }}
+                />
+                <div className="mt-2 text-xs text-center" style={{ color: mode === "dark" ? "white" : "black" }}>
+                  {thumbnail ? "Uploaded Image Preview" : 
+                   thumbnailLink ? "URL Image Preview" : 
+                   "Current Thumbnail"}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                  <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <p className="text-sm text-gray-500 mt-2">No thumbnail selected</p>
+                <p className="text-xs text-gray-400 mt-1">Upload an image or provide a link above</p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Title Input */}
